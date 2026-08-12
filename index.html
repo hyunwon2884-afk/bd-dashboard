@@ -429,6 +429,27 @@ tr.neg td{color:var(--red);}
           <tbody id="pnlBody"></tbody>
         </table>
       </div>
+
+      <div class="section-title"><span id="pnlChartTitle">브랜드별 손익 비교 차트</span><span class="desc">위 표를 그래프로 함께 확인할 수 있습니다.</span></div>
+      <div class="chart-grid">
+        <div class="card chart-card">
+          <div class="chart-title">브랜드별 셀아웃 비교</div>
+          <div class="chart-sub" id="pnlChartSub1"></div>
+          <div class="canvas-wrap"><canvas id="pnlSelloutChart"></canvas></div>
+        </div>
+        <div class="card chart-card">
+          <div class="chart-title">브랜드별 셀인 비교</div>
+          <div class="chart-sub" id="pnlChartSub3"></div>
+          <div class="canvas-wrap"><canvas id="pnlSellinChart"></canvas></div>
+        </div>
+      </div>
+      <div class="chart-grid" style="margin-top:14px;">
+        <div class="card chart-card" style="grid-column:1 / -1;">
+          <div class="chart-title">브랜드별 공헌이익 비교</div>
+          <div class="chart-sub" id="pnlChartSub2">막대: 기준월·비교월 공헌이익 금액 · 선: 공헌이익률(비교월)</div>
+          <div class="canvas-wrap"><canvas id="pnlProfitChart"></canvas></div>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -1381,6 +1402,53 @@ function renderPnlTab(){
   });
 
   applyPnlSearch();
+  renderPnlCharts(brands, channels, compStart, compEnd, isMulti);
+}
+function renderPnlCharts(brands, channels, compStart, compEnd, isMulti){
+  const labels = brands;
+  const startAgg = brands.map(b=>sumRange([b], channels, compStart, compStart));
+  const endAgg = brands.map(b=>sumRange([b], channels, compEnd, compEnd));
+
+  const subTxt = isMulti
+    ? `${MONTHS_CLEAN[compStart]}(기준월) vs ${MONTHS_CLEAN[compEnd]}(비교월) · 브랜드별`
+    : `${MONTHS_CLEAN[compEnd]} 기준 · 브랜드별`;
+  document.getElementById('pnlChartSub1').textContent = subTxt;
+  document.getElementById('pnlChartSub3').textContent = subTxt;
+
+  if(isMulti){
+    upsertChart('pnlSelloutChart',{type:'bar',data:{labels,datasets:[
+      {label:`${MONTHS_CLEAN[compStart]} 셀아웃`,data:startAgg.map(a=>a.sellout),backgroundColor:'#c9c8f7'},
+      {label:`${MONTHS_CLEAN[compEnd]} 셀아웃`,data:endAgg.map(a=>a.sellout),backgroundColor:'#6a5cf5'}
+    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{ticks:{callback:v=>(v/1e6).toFixed(0)+'M'}}}}});
+
+    upsertChart('pnlSellinChart',{type:'bar',data:{labels,datasets:[
+      {label:`${MONTHS_CLEAN[compStart]} 셀인`,data:startAgg.map(a=>a.sellin),backgroundColor:'#f0dfae'},
+      {label:`${MONTHS_CLEAN[compEnd]} 셀인`,data:endAgg.map(a=>a.sellin),backgroundColor:'#d9b25c'}
+    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{ticks:{callback:v=>(v/1e6).toFixed(0)+'M'}}}}});
+
+    upsertChart('pnlProfitChart',{type:'bar',data:{labels,datasets:[
+      {type:'bar',label:`${MONTHS_CLEAN[compStart]} 공헌이익`,data:startAgg.map(a=>a.contribution),backgroundColor:'#c7ecdb'},
+      {type:'bar',label:`${MONTHS_CLEAN[compEnd]} 공헌이익`,data:endAgg.map(a=>a.contribution),backgroundColor:'#1f9d6f'},
+      {type:'line',label:`${MONTHS_CLEAN[compEnd]} 공헌이익률`,data:endAgg.map(a=>a.sellin?a.contribution/a.sellin*100:0),borderColor:'#e0435b',yAxisID:'y1',tension:.3}
+    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{
+      y:{ticks:{callback:v=>(v/1e6).toFixed(0)+'M'}}, y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>v+'%'}}
+    }}});
+  } else {
+    upsertChart('pnlSelloutChart',{type:'bar',data:{labels,datasets:[
+      {label:'셀아웃',data:endAgg.map(a=>a.sellout),backgroundColor:'#6a5cf5'}
+    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{ticks:{callback:v=>(v/1e6).toFixed(0)+'M'}}}}});
+
+    upsertChart('pnlSellinChart',{type:'bar',data:{labels,datasets:[
+      {label:'셀인',data:endAgg.map(a=>a.sellin),backgroundColor:'#d9b25c'}
+    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{ticks:{callback:v=>(v/1e6).toFixed(0)+'M'}}}}});
+
+    upsertChart('pnlProfitChart',{type:'bar',data:{labels,datasets:[
+      {type:'bar',label:'공헌이익',data:endAgg.map(a=>a.contribution),backgroundColor:endAgg.map(a=>a.contribution<0?'#e0435b':'#1f9d6f')},
+      {type:'line',label:'공헌이익률',data:endAgg.map(a=>a.sellin?a.contribution/a.sellin*100:0),borderColor:'#e0435b',yAxisID:'y1',tension:.3}
+    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{
+      y:{ticks:{callback:v=>(v/1e6).toFixed(0)+'M'}}, y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>v+'%'}}
+    }}});
+  }
 }
 function buildChannelDetailHtml(brand, channels, mStart, mEnd, brandsForAll){
   const bset = brand? [brand] : brandsForAll;
