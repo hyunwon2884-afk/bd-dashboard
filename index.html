@@ -93,22 +93,24 @@ select, .date-input{border:1px solid var(--line);border-radius:8px;padding:7px 1
 .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);}
 .kpi .label{font-size:12px;color:var(--sub);font-weight:600;margin-bottom:8px;}
 .kpi .value{font-size:21px;font-weight:800;}
-.kpi.roas{border-color:var(--gold2);background:linear-gradient(180deg,#fffdf7,#fff);}
+.kpi.roas{border-color:var(--line);border-left:4px solid var(--gold2);background:#fff;}
 .kpi.roas .value{color:var(--gold2);}
 .kpi .delta{font-size:11px;font-weight:700;margin-top:6px;}
 .kpi .delta.up{color:var(--red);}
 .kpi .delta.down{color:#2a6fdb;}
 
-/* 매출(셀아웃) 히어로 카드 */
-.kpi.sellout-hero{background:linear-gradient(135deg,#eef0ff,#f8f7ff);border-color:#c9c8f7;}
-.kpi.sellout-hero .label{color:#5b52c9;}
+/* 매출(셀아웃) 강조: 흰 배경 + 좌측 포인트 컬러 라인만 사용 (은은하게) */
+.kpi.sellout-hero{border-color:var(--line);border-left:4px solid #6a5cf5;background:#fff;}
 .kpi.sellout-hero .value{color:#4a3fc7;}
 
-/* 공헌이익 포인트 카드 */
-.kpi.profit-point{background:linear-gradient(135deg,#f3fbf7,#fff);border-color:var(--green);}
-.kpi.profit-point .label{color:#177a52;}
+/* 공헌이익 강조: 흰 배경 + 좌측 포인트 컬러 라인만 사용 */
+.kpi.profit-point{border-color:var(--line);border-left:4px solid var(--green);background:#fff;}
 .kpi.profit-point .value{color:var(--green);}
 .kpi.profit-point .value.neg{color:var(--red);}
+
+/* 원가율/광고비율/수수료율: ROAS와 동일한 포인트 언어(좌측 라인 + 컬러 숫자)로 통일 */
+.kpi.ratio-accent{border-color:var(--line);border-left:4px solid #64748b;background:#fff;}
+.kpi.ratio-accent .value{color:#475569;}
 
 /* 비용 항목(원가/광고비/배송비)을 한 줄로 묶은 카드 */
 .cost-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-top:12px;display:flex;}
@@ -117,13 +119,15 @@ select, .date-input{border:1px solid var(--line);border-radius:8px;padding:7px 1
 .cost-item:hover{background:#fafafe;}
 .cost-item .label{font-size:12px;color:var(--sub);font-weight:600;margin-bottom:6px;}
 .cost-item .value{font-size:17px;font-weight:800;}
+.ratio-badge{font-size:11px;font-weight:700;color:var(--sub);background:#f2f2f7;border-radius:5px;padding:2px 6px;vertical-align:middle;margin-left:2px;}
 .cost-item .kpi-expand-note{font-size:10px;margin-top:6px;}
 .cost-item .kpi-breakdown{max-height:200px;}
 
-.roas-row{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px;}
+.percent-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:12px;}
+.percent-row .card{padding:14px 16px;}
+.percent-row .card .value{font-size:18px;}
 
-.ratio-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px;}
-.ratio-grid .card .value{font-size:19px;font-weight:800;}
+
 
 /* minus channel */
 .minus-wrap{margin-top:16px;}
@@ -290,8 +294,7 @@ tr.neg td{color:var(--red);}
 
       <div class="kpi-grid" id="kpiGrid"></div>
       <div class="cost-card" id="costRow"></div>
-      <div class="roas-row" id="roasRow"></div>
-      <div class="ratio-grid" id="ratioGrid"></div>
+      <div class="percent-row" id="percentRow"></div>
 
       <div class="section-title">⚠ 공헌이익 마이너스 채널 <span class="tag warn">별도 카드</span><span class="desc">선택한 기간·브랜드 기준, 공헌이익이 적자인 채널만 모았습니다. 카드를 클릭하면 브랜드별 상세가 펼쳐집니다.</span></div>
       <div class="minus-grid" id="minusGrid"></div>
@@ -904,22 +907,20 @@ function renderKPI(){
     <div class="card kpi"><div class="label">공헌이익률 <span style="font-weight:400;color:#9aa0b0;">(셀인 기준·P&L)</span></div><div class="value">${fmtPct(contribRate)}</div>${vsAgg?vsLinePP(contribRate,vsRate):''}</div>
   `;
   const costRow = document.getElementById('costRow');
+  const shippingRate = agg.sellin? agg.shipping/agg.sellin : 0;
   costRow.innerHTML = `
-    <div class="cost-item clickable" data-metric="cost"><div class="label">원가</div><div class="value">${fmtWon(agg.cost)}</div>${vsAgg?vsLine(agg.cost,vsAgg.cost):''}<div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-cost"></div></div>
-    <div class="cost-item clickable" data-metric="adspend"><div class="label">광고비</div><div class="value">${fmtWon(agg.adspend)}</div>${vsAgg?vsLine(agg.adspend,vsAgg.adspend):''}<div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-adspend"></div></div>
-    <div class="cost-item clickable" data-metric="shipping"><div class="label">배송비</div><div class="value">${fmtWon(agg.shipping)}</div>${vsAgg?vsLine(agg.shipping,vsAgg.shipping):''}<div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-shipping"></div></div>
+    <div class="cost-item clickable" data-metric="cost"><div class="label">원가</div><div class="value">${fmtWon(agg.cost)} <span class="ratio-badge">S/in ${fmtPct(costRate)}</span></div>${vsAgg?vsLine(agg.cost,vsAgg.cost):''}<div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-cost"></div></div>
+    <div class="cost-item clickable" data-metric="adspend"><div class="label">광고비</div><div class="value">${fmtWon(agg.adspend)} <span class="ratio-badge">S/in ${fmtPct(adRate)}</span></div>${vsAgg?vsLine(agg.adspend,vsAgg.adspend):''}<div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-adspend"></div></div>
+    <div class="cost-item clickable" data-metric="shipping"><div class="label">배송비</div><div class="value">${fmtWon(agg.shipping)} <span class="ratio-badge">S/in ${fmtPct(shippingRate)}</span></div>${vsAgg?vsLine(agg.shipping,vsAgg.shipping):''}<div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-shipping"></div></div>
   `;
-  const roasRow = document.getElementById('roasRow');
-  roasRow.innerHTML = `
+  document.getElementById('percentRow').innerHTML = `
     <div class="card kpi roas"><div class="label">ROAS (셀아웃 기준)</div><div class="value">${(roasSellout*100).toFixed(0)}%</div></div>
     <div class="card kpi roas"><div class="label">ROAS (셀인 기준)</div><div class="value">${(roasSellin*100).toFixed(0)}%</div></div>
+    <div class="card kpi ratio-accent"><div class="label">원가율 (원가 ÷ 셀인)</div><div class="value">${fmtPct(costRate)}</div></div>
+    <div class="card kpi ratio-accent"><div class="label">광고비율 (광고비 ÷ 셀인)</div><div class="value">${fmtPct(adRate)}</div></div>
+    <div class="card kpi ratio-accent"><div class="label">수수료율 (채널수수료 ÷ 셀인)</div><div class="value">${fmtPct(feeRate)}</div><div style="font-size:10px;color:#9aa0b0;margin-top:6px;line-height:1.4;">* 쿠팡(로켓) 등 매입형 채널은 매입단가에 수수료가 선차감(제품별 상이)되어 0%로 표기됩니다.</div></div>
   `;
   wireKpiBreakdownClicks(agg);
-  document.getElementById('ratioGrid').innerHTML = `
-    <div class="card"><div class="label">원가율 (원가 ÷ 셀인)</div><div class="value">${fmtPct(costRate)}</div></div>
-    <div class="card"><div class="label">광고비율 (광고비 ÷ 셀인)</div><div class="value">${fmtPct(adRate)}</div></div>
-    <div class="card"><div class="label">수수료율 (채널수수료 ÷ 셀인)</div><div class="value">${fmtPct(feeRate)}</div><div style="font-size:10.5px;color:#9aa0b0;margin-top:6px;line-height:1.4;">* 쿠팡(로켓) 등 매입형 채널은 수수료가 매입단가에 선차감(제품별 상이)되어 있어 0%로 표기됩니다. 실제 무수수료를 의미하지 않습니다.</div></div>
-  `;
   const rangeTxt = state.gran==='day'
     ? `${state.startDate} ~ ${state.endDate}`
     : `${MONTHS_CLEAN[state.startMonth]} ~ ${MONTHS_CLEAN[state.endMonth]}`;
