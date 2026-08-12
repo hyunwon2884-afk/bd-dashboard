@@ -80,6 +80,15 @@ select, .date-input{border:1px solid var(--line);border-radius:8px;padding:7px 1
 
 /* KPI cards */
 .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.kpi.clickable{cursor:pointer;}
+.kpi.clickable:hover{border-color:var(--accent);}
+.kpi-expand-note{font-size:10.5px;color:var(--accent);font-weight:700;margin-top:8px;}
+.kpi-breakdown{display:none;margin-top:10px;border-top:1px dashed var(--line);padding-top:8px;max-height:220px;overflow-y:auto;}
+.kpi-breakdown.open{display:block;}
+.kpi-breakdown .bd-row{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;padding:5px 2px;border-bottom:1px solid #f5f5f8;}
+.kpi-breakdown .bd-row .bd-bar-wrap{flex:1;margin:0 8px;height:5px;background:#eef0f5;border-radius:999px;overflow:hidden;}
+.kpi-breakdown .bd-row .bd-bar{height:100%;background:var(--accent);border-radius:999px;}
+.kpi-breakdown .bd-row .bd-val{white-space:nowrap;font-weight:700;min-width:80px;text-align:right;}
 .kpi-grid.roas-8{grid-template-columns:repeat(4,1fr);}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);}
 .kpi .label{font-size:12px;color:var(--sub);font-weight:600;margin-bottom:8px;}
@@ -863,14 +872,16 @@ function renderKPI(){
     </div>`;
   kpiGrid.innerHTML = `
     <div class="card kpi"><div class="label">셀아웃</div><div class="value">${fmtWon(agg.sellout)}</div>${vsAgg?vsLine(agg.sellout,vsAgg.sellout):''}${targetBarHtml}</div>
-    <div class="card kpi"><div class="label">셀인</div><div class="value">${fmtWon(agg.sellin)}</div>${vsAgg?vsLine(agg.sellin,vsAgg.sellin):''}</div>
-    <div class="card kpi"><div class="label">원가</div><div class="value">${fmtWon(agg.cost)}</div>${vsAgg?vsLine(agg.cost,vsAgg.cost):''}</div>
-    <div class="card kpi"><div class="label">광고비</div><div class="value">${fmtWon(agg.adspend)}</div>${vsAgg?vsLine(agg.adspend,vsAgg.adspend):''}</div>
-    <div class="card kpi"><div class="label">공헌이익</div><div class="value" style="${agg.contribution<0?'color:var(--red)':''}">${fmtWon(agg.contribution)}</div>${vsAgg?vsLine(agg.contribution,vsAgg.contribution):''}</div>
+    <div class="card kpi clickable" data-metric="sellin"><div class="label">셀인</div><div class="value">${fmtWon(agg.sellin)}</div>${vsAgg?vsLine(agg.sellin,vsAgg.sellin):''}<div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-sellin"></div></div>
+    <div class="card kpi clickable" data-metric="cost"><div class="label">원가</div><div class="value">${fmtWon(agg.cost)}</div>${vsAgg?vsLine(agg.cost,vsAgg.cost):''}<div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-cost"></div></div>
+    <div class="card kpi clickable" data-metric="adspend"><div class="label">광고비</div><div class="value">${fmtWon(agg.adspend)}</div>${vsAgg?vsLine(agg.adspend,vsAgg.adspend):''}<div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-adspend"></div></div>
+    <div class="card kpi clickable" data-metric="shipping"><div class="label">배송비</div><div class="value">${fmtWon(agg.shipping)}</div>${vsAgg?vsLine(agg.shipping,vsAgg.shipping):''}<div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-shipping"></div></div>
+    <div class="card kpi clickable" data-metric="contribution"><div class="label">공헌이익</div><div class="value" style="${agg.contribution<0?'color:var(--red)':''}">${fmtWon(agg.contribution)}</div>${vsAgg?vsLine(agg.contribution,vsAgg.contribution):''}<div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-contribution"></div></div>
     <div class="card kpi"><div class="label">공헌이익률 <span style="font-weight:400;color:#9aa0b0;">(셀인 기준·P&L)</span></div><div class="value">${fmtPct(contribRate)}</div>${vsAgg?vsLinePP(contribRate,vsRate):''}</div>
     <div class="card kpi roas"><div class="label">ROAS (셀아웃 기준)</div><div class="value">${(roasSellout*100).toFixed(0)}%</div></div>
     <div class="card kpi roas"><div class="label">ROAS (셀인 기준)</div><div class="value">${(roasSellin*100).toFixed(0)}%</div></div>
   `;
+  wireKpiBreakdownClicks(agg);
   document.getElementById('ratioGrid').innerHTML = `
     <div class="card"><div class="label">원가율 (원가 ÷ 셀인)</div><div class="value">${fmtPct(costRate)}</div></div>
     <div class="card"><div class="label">광고비율 (광고비 ÷ 셀인)</div><div class="value">${fmtPct(adRate)}</div></div>
@@ -881,6 +892,45 @@ function renderKPI(){
     : `${MONTHS_CLEAN[state.startMonth]} ~ ${MONTHS_CLEAN[state.endMonth]}`;
   const vsTxt = state.vsMonth!==null ? ` · 비교월: ${MONTHS_CLEAN[state.vsMonth]} 대비 증감 표시 중` : '';
   document.getElementById('dashSub').textContent = `${rangeTxt} · 브랜드 ${state.brands.size}개 · 채널 ${state.channels.size}개 기준${vsTxt}`;
+}
+
+/* 셀인/원가/광고비/배송비/공헌이익 카드 클릭 시, 채널별 상세를 값이 큰 순으로 바로 아래에 펼쳐서 보여줍니다. */
+function wireKpiBreakdownClicks(totalAgg){
+  document.querySelectorAll('.kpi.clickable').forEach(card=>{
+    const metric = card.dataset.metric;
+    card.onclick = ()=>{
+      const bd = document.getElementById('bd-'+metric);
+      const isOpening = !bd.classList.contains('open');
+      // 다른 카드의 펼침은 그대로 두고, 클릭한 카드만 토글합니다.
+      if(isOpening && !bd.dataset.loaded){
+        bd.innerHTML = buildKpiBreakdownHtml(metric, totalAgg[metric]);
+        bd.dataset.loaded = '1';
+      }
+      bd.classList.toggle('open');
+      card.querySelector('.kpi-expand-note').textContent = bd.classList.contains('open') ? '▴ 접기' : '▾ 채널별 상세 (큰 순)';
+    };
+  });
+}
+function buildKpiBreakdownHtml(metric, totalVal){
+  const brands = activeBrands(), channels = activeChannels();
+  const rows = channels.map(c=>{
+    const agg = state.gran==='day'
+      ? sumDayRange(brands,[c],state.startDate,state.endDate)
+      : sumRange(brands,[c],state.startMonth,state.endMonth);
+    return {channel:c, value: agg[metric]||0};
+  }).filter(r=>r.value!==0);
+  rows.sort((a,b)=>Math.abs(b.value)-Math.abs(a.value)); // 절대값 큰 순
+  const maxAbs = rows.length? Math.abs(rows[0].value) : 1;
+  if(rows.length===0) return `<div style="font-size:11.5px;color:var(--sub);padding:6px 2px;">표시할 채널별 데이터가 없습니다.</div>`;
+  return rows.map(r=>{
+    const pctOfMax = maxAbs? Math.abs(r.value)/maxAbs*100 : 0;
+    const neg = r.value<0;
+    return `<div class="bd-row">
+      <span>${r.channel}</span>
+      <span class="bd-bar-wrap"><span class="bd-bar" style="width:${pctOfMax}%;${neg?'background:var(--red);':''}"></span></span>
+      <span class="bd-val" style="${neg?'color:var(--red);':''}">${fmtWon(r.value)}</span>
+    </div>`;
+  }).join('');
 }
 
 /* ============================= RENDER: MINUS CHANNELS ============================= */
