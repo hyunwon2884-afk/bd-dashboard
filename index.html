@@ -126,7 +126,35 @@ tr.neg td{color:var(--red);}
 .sub-row td{background:#f9f9fd;font-size:11.8px;color:#555;}
 .sub-row.hidden{display:none;}
 
-.pin{color:var(--gold2);}
+.goal-hero{background:linear-gradient(135deg,#fbfaff,#fff);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow);margin-bottom:18px;}
+.goal-hero-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;margin-bottom:14px;}
+.goal-hero-title{font-size:14px;font-weight:800;display:flex;align-items:center;gap:8px;}
+.goal-hero-title .icon{font-size:16px;}
+.goal-hero-numbers{display:flex;gap:28px;flex-wrap:wrap;}
+.goal-hero-numbers .item{text-align:left;}
+.goal-hero-numbers .item .lbl{font-size:11px;color:var(--sub);font-weight:600;margin-bottom:3px;}
+.goal-hero-numbers .item .val{font-size:19px;font-weight:800;}
+.goal-hero-badge{font-size:22px;font-weight:900;padding:6px 16px;border-radius:999px;white-space:nowrap;}
+.goal-hero-badge.good{background:#e8f8f1;color:var(--green);}
+.goal-hero-badge.warn{background:#fff2e3;color:#b5690f;}
+.goal-hero-badge.bad{background:var(--red-soft);color:var(--red);}
+.goal-bar-track{width:100%;height:14px;background:#eef0f5;border-radius:999px;overflow:hidden;position:relative;}
+.goal-bar-fill{height:100%;border-radius:999px;transition:width .4s;background:linear-gradient(90deg,#8b7ef7,#6a5cf5);}
+.goal-bar-fill.warn{background:linear-gradient(90deg,#f5c369,#e8912a);}
+.goal-bar-fill.bad{background:linear-gradient(90deg,#f28b9c,#e0435b);}
+.goal-bar-marker{position:absolute;top:-3px;width:2px;height:20px;background:#333;}
+.goal-hero-brands{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+.goal-mini{flex:1;min-width:150px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;}
+.goal-mini .name{font-size:11.5px;font-weight:700;margin-bottom:6px;display:flex;justify-content:space-between;}
+.goal-mini .name b{font-weight:800;}
+.goal-mini .goal-bar-track{height:8px;}
+
+.kpi-mini-bar{margin-top:10px;}
+.kpi-mini-bar .track{width:100%;height:6px;background:#eef0f5;border-radius:999px;overflow:hidden;}
+.kpi-mini-bar .fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#8b7ef7,#6a5cf5);}
+.kpi-mini-bar .fill.warn{background:linear-gradient(90deg,#f5c369,#e8912a);}
+.kpi-mini-bar .fill.bad{background:linear-gradient(90deg,#f28b9c,#e0435b);}
+.kpi-mini-bar .txt{font-size:10.5px;color:var(--sub);margin-top:4px;display:flex;justify-content:space-between;}
 </style>
 </head>
 <body>
@@ -225,6 +253,8 @@ tr.neg td{color:var(--red);}
     <div id="tab-dashboard">
       <div class="h1">대시보드</div>
       <div class="h1-sub" id="dashSub">브랜드 전체 셀아웃·셀인·손익 현황을 한눈에 확인합니다.</div>
+
+      <div class="goal-hero" id="goalHero"></div>
 
       <div class="kpi-grid" id="kpiGrid"></div>
       <div class="ratio-grid" id="ratioGrid"></div>
@@ -385,13 +415,19 @@ const DAILY_REAL = [["2026-01-01",0,"29CM",50000,12500,37500,10416,7495,0,0,2708
 
 function daysInMonth2026(m){ return [31,28,31,30,31,30,31,9][m]; } // 8월은 08/09까지 집계
 
-// monthlyData[brand][channel][monthIdx] = {sellout,sellin,cost,adspend,fee,shipping,other,contribution}
+// TARGET_REAL[브랜드][채널][월idx] = 목표매출 (원본 파일 "목표매출" 컬럼 기준)
+const TARGET_REAL = {"그라펜":{"11번가":[0,0,0,0,0,0,0,0],"29CM":[0,0,399993,0,0,0,0,0],"KKST":[0,0,100006,0,0,0,0,0],"SI.V":[0,3000004,1860000,1500000,1550000,0,0,0],"SSF":[0,1499988,899992,1050000,1240000,0,0,0],"SSG":[0,0,0,0,0,0,0,0],"굿트리":[0,0,0,0,0,0,0,0],"글로우업리즈":[0,0,30000000,0,0,0,0,0],"기타 채널":[0,7299992,36060004,6240000,6610000,0,0,0],"무신사":[0,31999996,32871427,41600000,35200000,33600000,18900000,0],"무신사(오프라인)":[0,0,0,0,0,0,0,0],"비그룸":[0,0,0,0,0,0,0,0],"스마트스토어":[0,70000000,73999998,91000000,98000000,107000010,80700000,85000000],"스탠다드 서울":[0,0,0,0,0,0,0,0],"아워픽":[0,0,0,0,0,0,0,0],"아트박스":[0,0,0,0,0,0,0,0],"에이블리":[0,2800000,1550000,3000000,3100000,0,0,0],"오늘의집":[0,0,0,0,0,0,0,0],"이크빈":[0,0,0,0,0,0,0,0],"자사몰":[0,30000012,31000000,36000000,43400000,0,0,0],"지그재그":[0,0,0,0,0,0,0,0],"지마켓/옥션":[0,0,630013,0,0,0,0,0],"카카오톡 선물하기":[0,90000008,82000000,84000000,68000000,84766667,31000000,34100000],"카카오톡스토어":[0,0,620000,690000,720000,0,0,0],"쿠팡(그로스)":[65490848,75600000,82150007,81888800,84630000,84950000,148800000,124000000],"쿠팡(로켓)":[284166677,256666676,284166677,253700001,266750000,275500000,263500000,248000000],"토스쇼핑":[0,0,0,0,0,0,0,0],"트레져헌터":[0,0,0,0,0,0,0,0],"헤메코랩":[0,0,0,0,0,0,0,0]},"스탠다드서울":{"11번가":[0,0,0,0,0,0,0,0],"29CM":[0,0,0,0,0,0,0,0],"KKST":[0,0,0,0,0,0,0,0],"SI.V":[0,0,0,0,0,0,0,0],"SSF":[0,0,0,0,0,0,0,0],"SSG":[0,0,0,0,0,0,0,0],"굿트리":[0,0,0,0,0,0,0,0],"글로우업리즈":[0,0,0,0,0,0,0,0],"기타 채널":[0,0,0,0,0,0,0,0],"무신사":[0,0,0,0,0,0,800451,0],"무신사(오프라인)":[0,0,0,0,0,0,0,0],"비그룸":[0,0,0,0,0,0,0,0],"스마트스토어":[0,0,0,0,0,0,0,0],"스탠다드 서울":[0,0,0,0,0,0,0,0],"아워픽":[0,0,0,0,0,0,0,0],"아트박스":[0,0,0,0,0,0,0,0],"에이블리":[0,0,0,0,0,0,0,0],"오늘의집":[0,0,0,0,0,0,0,0],"이크빈":[0,0,0,0,0,0,0,0],"자사몰":[0,0,0,0,0,0,0,0],"지그재그":[0,0,0,0,0,0,0,0],"지마켓/옥션":[0,0,0,0,0,0,0,0],"카카오톡 선물하기":[0,0,0,0,0,0,0,0],"카카오톡스토어":[0,0,0,0,0,0,0,0],"쿠팡(그로스)":[0,0,0,0,0,0,0,0],"쿠팡(로켓)":[0,0,0,0,0,0,0,0],"토스쇼핑":[0,0,0,0,0,0,0,0],"트레져헌터":[0,0,0,0,0,0,0,0],"헤메코랩":[0,0,0,0,0,0,0,0]},"줄라이미":{"11번가":[0,0,0,0,0,0,0,0],"29CM":[0,0,0,0,0,0,0,0],"KKST":[0,0,0,0,0,0,0,0],"SI.V":[0,3000004,5270000,3450000,5499989,0,0,0],"SSF":[0,0,0,0,0,0,0,0],"SSG":[0,0,0,0,0,0,0,0],"굿트리":[0,0,0,0,0,0,0,0],"글로우업리즈":[0,0,0,0,0,0,0,0],"기타 채널":[0,0,0,0,0,0,0,0],"무신사":[0,0,0,0,0,0,0,0],"무신사(오프라인)":[0,0,0,0,0,0,0,0],"비그룸":[0,0,0,0,0,0,0,0],"스마트스토어":[0,0,5200002,0,0,0,0,0],"스탠다드 서울":[0,0,0,0,0,0,0,0],"아워픽":[0,0,0,0,0,0,0,0],"아트박스":[0,0,0,0,0,0,0,0],"에이블리":[0,0,0,0,0,0,0,0],"오늘의집":[0,0,0,0,0,0,0,0],"이크빈":[0,0,0,0,0,0,0,0],"자사몰":[0,2000012,5200009,3000000,3100000,0,0,0],"지그재그":[0,0,0,0,0,0,0,0],"지마켓/옥션":[0,0,0,0,0,0,0,0],"카카오톡 선물하기":[0,0,0,0,0,0,0,0],"카카오톡스토어":[0,0,0,0,0,0,0,0],"쿠팡(그로스)":[14062995,12246192,15311489,18350010,16999997,15000000,20150000,17050000],"쿠팡(로켓)":[0,0,0,0,0,0,0,0],"토스쇼핑":[0,0,0,0,0,0,0,0],"트레져헌터":[0,0,0,0,0,0,0,0],"헤메코랩":[0,0,0,0,0,0,0,0]}};
+
+// monthlyData[brand][channel][monthIdx] = {sellout,sellin,cost,adspend,fee,shipping,other,contribution,target}
+// 목표매출(target): 스탠다드서울·줄라이미는 현재 적극 운영 중이 아니라 목표를 공란(0)으로 비워둡니다.
+const BRANDS_WITH_TARGET = new Set(['그라펜']);
 const monthlyData = {};
 BRANDS.forEach(b=>{
   monthlyData[b] = {};
   CHANNELS.forEach(c=>{
     const arr = (MONTHLY_REAL[b] && MONTHLY_REAL[b][c]) || Array.from({length:8},()=>[0,0,0,0,0,0,0,0]);
-    monthlyData[b][c] = arr.map(a=>({sellout:a[0],fee:a[1],sellin:a[2],cost:a[3],shipping:a[4],adspend:a[5],other:a[6],contribution:a[2]-a[3]-a[4]-a[5]-a[6]}));
+    const tgt = BRANDS_WITH_TARGET.has(b) ? ((TARGET_REAL[b] && TARGET_REAL[b][c]) || [0,0,0,0,0,0,0,0]) : [0,0,0,0,0,0,0,0];
+    monthlyData[b][c] = arr.map((a,i)=>({sellout:a[0],fee:a[1],sellin:a[2],cost:a[3],shipping:a[4],adspend:a[5],other:a[6],contribution:a[2]-a[3]-a[4]-a[5]-a[6],target:tgt[i]||0}));
   });
 });
 
@@ -459,14 +495,16 @@ function weeklyRecord(b,c,wIdx){
   });
 })();
 
-/* ===== 수동 보정: 네이버(스마트스토어) · 그라펜 · 5월 채널수수료 12,989,888원 균등 배분 =====
-   일 419,028.6452원 × 31일 = 12,989,888원. 채널수수료는 공헌이익 계산에 쓰이지 않는 정보성 항목이라
-   일별/월별 표시값만 갱신합니다 (공헌이익에는 영향 없음). */
+/* ===== 수동 보정: 네이버(스마트스토어) · 그라펜 · 5월 채널수수료 =====
+   일별은 RAW 미수정으로 기존 일 419,028.6452원 분배를 그대로 유지하고,
+   월 합계만 최신 값인 14,000,000원으로 대체합니다 (일별 합계와는 의도적으로 차이가 있을 수 있음).
+   채널수수료는 공헌이익 계산에 쓰이지 않는 정보성 항목이라 공헌이익에는 영향 없습니다. */
 (function applyNaverMayFeeOverride(){
   const brand = '그라펜', channel = '스마트스토어', monthIdx = 4; // 2026-05
-  const totalFee = 12989888;
+  const dailyTotalFee = 12989888; // 기존 일별 분배 유지 (419,028.6452원 × 31일)
+  const monthlyOverrideFee = 14000000; // 최신 월 합계 (요청 반영, 일별은 미수정)
   const daysInMay = 31;
-  const perDayFee = totalFee/daysInMay; // 419,028.6452
+  const perDayFee = dailyTotalFee/daysInMay; // 419,028.6452
 
   for(let d=1; d<=daysInMay; d++){
     const dateStr = `2026-05-${String(d).padStart(2,'0')}`;
@@ -476,8 +514,11 @@ function weeklyRecord(b,c,wIdx){
   }
 
   const monthRec = monthlyData[brand][channel][monthIdx];
-  monthRec.fee = totalFee;
+  monthRec.fee = monthlyOverrideFee;
 })();
+
+/* ===== 수동 보정: 네이버(스마트스토어) · 그라펜 · 7월 광고비 2,800만원 확인 =====
+   이전 턴에서 이미 28,000,000원으로 반영 완료된 값입니다. 이번 요청에서 변경 없음(재확인용). */
 
 /* ============================= STATE ============================= */
 const state = {
@@ -499,18 +540,19 @@ const fmtPct = (n,d=1) => (isFinite(n)? (n*100).toFixed(d):'0.0')+'%';
 const fmtOk = n => (n>=0?'':'')+fmt(n)+' 원';
 
 function sumRange(brands, channels, mStart, mEnd){
-  const agg = {sellout:0,sellin:0,cost:0,adspend:0,fee:0,shipping:0,other:0,contribution:0};
+  const agg = {sellout:0,sellin:0,cost:0,adspend:0,fee:0,shipping:0,other:0,contribution:0,target:0};
   brands.forEach(b=>channels.forEach(c=>{
     for(let m=mStart;m<=mEnd;m++){
       const r = monthlyData[b][c][m];
       agg.sellout+=r.sellout; agg.sellin+=r.sellin; agg.cost+=r.cost; agg.adspend+=r.adspend;
       agg.fee+=r.fee; agg.shipping+=r.shipping; agg.other+=r.other; agg.contribution+=r.contribution;
+      agg.target+=(r.target||0);
     }
   }));
   return agg;
 }
 function sumDayRange(brands, channels, startDate, endDate){
-  const agg = {sellout:0,sellin:0,cost:0,adspend:0,fee:0,shipping:0,other:0,contribution:0};
+  const agg = {sellout:0,sellin:0,cost:0,adspend:0,fee:0,shipping:0,other:0,contribution:0,target:0};
   const s = new Date(startDate), e = new Date(endDate);
   brands.forEach(b=>channels.forEach(c=>{
     for(let m=0;m<8;m++){
@@ -741,6 +783,45 @@ function upsertChart(id, config){
 const PALETTE = ['#6a5cf5','#2aa9a0','#d9b25c','#e0435b','#3b82f6','#a78bfa','#f59e0b','#10b981','#ec4899','#64748b','#84cc16','#06b6d4','#eab308','#f97316','#7c3aed'];
 
 /* ============================= RENDER: KPI ============================= */
+/* ============================= RENDER: GOAL HERO (목표매출 대비 달성률) ============================= */
+function renderGoalHero(){
+  const el = document.getElementById('goalHero');
+  if(state.gran!=='month'){
+    el.innerHTML = `
+      <div class="goal-hero-title"><span class="icon">🎯</span> 목표매출 대비 달성률</div>
+      <div style="font-size:12.5px;color:var(--sub);margin-top:8px;">목표매출은 월 단위로 관리되는 지표입니다. 상단 "보기 기준"을 <b>월별</b>로 전환하면 목표 대비 달성률을 확인할 수 있어요.</div>
+    `;
+    return;
+  }
+  const brands = activeBrands(), channels = activeChannels();
+  const agg = sumRange(brands, channels, state.startMonth, state.endMonth);
+  const pct = agg.target>0 ? (agg.sellout/agg.target*100) : null;
+  const badgeCls = pct===null?'':(pct>=100?'good':(pct>=80?'warn':'bad'));
+  const barCls = pct===null?'':(pct>=100?'':(pct>=80?'warn':'bad'));
+  const rangeTxt = `${MONTHS_CLEAN[state.startMonth]} ~ ${MONTHS_CLEAN[state.endMonth]}`;
+
+  // 참고: 현재는 그라펜만 목표매출을 관리 중이라 브랜드별 분리 없이 전체 합산 기준으로만 보여줍니다.
+  const targetNote = (brands.includes('그라펜') && brands.length>1)
+    ? `<div style="font-size:11px;color:var(--sub);margin-top:10px;">* 목표매출은 현재 그라펜만 관리 중입니다. 스탠다드서울·줄라이미는 목표가 아직 설정되지 않았습니다.</div>` : '';
+
+  el.innerHTML = `
+    <div class="goal-hero-top">
+      <div>
+        <div class="goal-hero-title"><span class="icon">🎯</span> 목표매출 대비 달성률 <span class="desc" style="font-weight:400;color:var(--sub);font-size:11.5px;">${rangeTxt} · 셀아웃 기준</span></div>
+        <div class="goal-hero-numbers" style="margin-top:10px;">
+          <div class="item"><div class="lbl">셀아웃 실적</div><div class="val">${fmtWon(agg.sellout)}</div></div>
+          <div class="item"><div class="lbl">목표매출</div><div class="val">${agg.target>0?fmtWon(agg.target):'목표 미설정'}</div></div>
+          <div class="item"><div class="lbl">목표 대비</div><div class="val" style="${pct!==null&&pct<100?'color:var(--red);':'color:var(--green);'}">${pct===null?'-':(pct>=100?'+':'')+fmt(agg.sellout-agg.target)+' 원'}</div></div>
+        </div>
+      </div>
+      ${pct!==null ? `<div class="goal-hero-badge ${badgeCls}">${pct.toFixed(1)}%</div>` : ''}
+    </div>
+    ${pct!==null ? `<div class="goal-bar-track"><div class="goal-bar-fill ${barCls}" style="width:${Math.min(100,pct)}%;"></div></div>` : ''}
+    ${targetNote}
+  `;
+}
+
+
 function renderKPI(){
   const agg = currentAgg();
   const contribRate = agg.sellin? agg.contribution/agg.sellin : 0;
@@ -759,20 +840,29 @@ function renderKPI(){
   }
   function vsLine(cur, base){
     if(vsAgg===null) return '';
-    const pct = base? (cur-base)/Math.abs(base)*100 : (cur===0?0:100);
+    const diffAmt = cur-base;
+    const pct = base? diffAmt/Math.abs(base)*100 : (cur===0?0:100);
     const cls = pct>=0?'up':'down';
-    return `<div class="delta ${cls}">${pct>=0?'+':''}${pct.toFixed(1)}% vs ${MONTHS_CLEAN[state.vsMonth]}</div>`;
+    return `<div class="delta ${cls}">${pct>=0?'+':''}${pct.toFixed(1)}% (${diffAmt>=0?'+':''}${fmt(diffAmt)}원) vs ${MONTHS_CLEAN[state.vsMonth]}</div>`;
   }
-  function vsLinePP(curPct, basePct){
+  function vsLinePP(curPct, basePct, curAmt, baseAmt){
     if(vsAgg===null) return '';
     const diff = (curPct-basePct)*100;
     const cls = diff>=0?'up':'down';
-    return `<div class="delta ${cls}">${diff>=0?'+':''}${diff.toFixed(1)}p vs ${MONTHS_CLEAN[state.vsMonth]}</div>`;
+    const amtTxt = (curAmt!==undefined && baseAmt!==undefined) ? ` (${curAmt-baseAmt>=0?'+':''}${fmt(curAmt-baseAmt)}원)` : '';
+    return `<div class="delta ${cls}">${diff>=0?'+':''}${diff.toFixed(1)}p${amtTxt} vs ${MONTHS_CLEAN[state.vsMonth]}</div>`;
   }
 
   const kpiGrid = document.getElementById('kpiGrid');
+  const targetPct = agg.target>0 ? (agg.sellout/agg.target*100) : null;
+  const targetBarCls = targetPct===null?'':(targetPct>=100?'':(targetPct>=80?'warn':'bad'));
+  const targetBarHtml = targetPct===null ? '' : `
+    <div class="kpi-mini-bar">
+      <div class="track"><div class="fill ${targetBarCls}" style="width:${Math.min(100,targetPct)}%;"></div></div>
+      <div class="txt"><span>목표 달성률</span><span><b>${targetPct.toFixed(0)}%</b> (목표 ${fmtWon(agg.target)})</span></div>
+    </div>`;
   kpiGrid.innerHTML = `
-    <div class="card kpi"><div class="label">셀아웃</div><div class="value">${fmtWon(agg.sellout)}</div>${vsAgg?vsLine(agg.sellout,vsAgg.sellout):''}</div>
+    <div class="card kpi"><div class="label">셀아웃</div><div class="value">${fmtWon(agg.sellout)}</div>${vsAgg?vsLine(agg.sellout,vsAgg.sellout):''}${targetBarHtml}</div>
     <div class="card kpi"><div class="label">셀인</div><div class="value">${fmtWon(agg.sellin)}</div>${vsAgg?vsLine(agg.sellin,vsAgg.sellin):''}</div>
     <div class="card kpi"><div class="label">원가</div><div class="value">${fmtWon(agg.cost)}</div>${vsAgg?vsLine(agg.cost,vsAgg.cost):''}</div>
     <div class="card kpi"><div class="label">광고비</div><div class="value">${fmtWon(agg.adspend)}</div>${vsAgg?vsLine(agg.adspend,vsAgg.adspend):''}</div>
@@ -1279,7 +1369,7 @@ function renderAll(){
   const rangeTxt = state.gran==='day' ? `${state.startDate} ~ ${state.endDate}` : `${MONTHS_CLEAN[state.startMonth]}~${MONTHS[state.endMonth]}`;
   const grpLabelMap = {all:'전체 채널', main:'온라인 메인채널', exclude_jasa:'자사몰 제외', only_jasa:'자사몰만'};
   document.getElementById('rangeHint').textContent = `* 8월은 08/09까지 집계된 데이터입니다 · 현재 조회 범위: ${rangeTxt} · 채널 그룹: ${grpLabelMap[state.channelGroup]||'사용자 지정'}`;
-  if(activeTab==='dashboard'){ renderKPI(); renderMinusChannels(); renderTrendCharts(); renderWoW(); }
+  if(activeTab==='dashboard'){ renderGoalHero(); renderKPI(); renderMinusChannels(); renderTrendCharts(); renderWoW(); }
   if(activeTab==='brand'){ renderBrandTab(); }
   if(activeTab==='channel'){ renderChannelTab(); }
   if(activeTab==='pnl'){ renderPnlTab(); }
