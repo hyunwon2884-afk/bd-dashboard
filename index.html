@@ -209,6 +209,13 @@ tr.neg td{color:var(--red);}
           </div>
         </div>
 
+        <div class="field">
+          <label>비교월 (VS) <span style="color:var(--accent);font-weight:700;">NEW</span></label>
+          <select id="vsMonthSel">
+            <option value="">비교 안 함</option>
+          </select>
+        </div>
+
         <button class="reset-btn" id="resetBtn">필터 초기화</button>
       </div>
       <div class="hint" id="rangeHint"></div>
@@ -413,6 +420,65 @@ function weeklyRecord(b,c,wIdx){
   return {sellout:arr[0],fee:arr[1],sellin:arr[2],cost:arr[3],shipping:arr[4],adspend:arr[5],other:arr[6],contribution:arr[2]-arr[3]-arr[4]-arr[5]-arr[6]};
 }
 
+/* ===== 수동 보정: 네이버(스마트스토어) · 그라펜 · 7월 광고비 28,000,000원 균등 배분 =====
+   RAW 파일 재업로드 없이, 사용자 요청에 따라 하루 약 90만원씩 31일 균등 배분하여
+   일별/월별/주별(7월 1~5주) 데이터에 일괄 반영합니다. (기존 RAW 상 7월 광고비 20,949,185원 → 28,000,000원으로 대체) */
+(function applyNaverJulyAdOverride(){
+  const brand = '그라펜', channel = '스마트스토어', monthIdx = 6; // 2026-07
+  const totalAd = 28000000;
+  const daysInJuly = 31;
+  const perDay = Math.round(totalAd/daysInJuly);
+  const dailyAmounts = [];
+  for(let d=1; d<=daysInJuly; d++){
+    dailyAmounts.push(d===daysInJuly ? (totalAd - perDay*(daysInJuly-1)) : perDay);
+  }
+
+  // 1) 일별 데이터 보정
+  for(let d=1; d<=daysInJuly; d++){
+    const dateStr = `2026-07-${String(d).padStart(2,'0')}`;
+    const existing = DAILY_INDEX[brand][channel][dateStr] || {sellout:0,fee:0,sellin:0,cost:0,shipping:0,adspend:0,other:0,contribution:0};
+    existing.adspend = dailyAmounts[d-1];
+    existing.contribution = existing.sellin - existing.cost - existing.shipping - existing.adspend - existing.other;
+    DAILY_INDEX[brand][channel][dateStr] = existing;
+  }
+
+  // 2) 월별 데이터 보정
+  const monthRec = monthlyData[brand][channel][monthIdx];
+  monthRec.adspend = totalAd;
+  monthRec.contribution = monthRec.sellin - monthRec.cost - monthRec.shipping - monthRec.adspend - monthRec.other;
+
+  // 3) 주별(WoW) 데이터 보정: 7월 1~5주 (일수 7,7,7,7,3일) 비중대로 재분배
+  const weekDayRanges = [[1,7],[8,14],[15,21],[22,28],[29,31]]; // 7월1주~5주
+  const weekIdxOffset = 1; // WEEK_LABELS 상 '7월1주'의 index
+  weekDayRanges.forEach(([from,to], i)=>{
+    const wIdx = weekIdxOffset + i;
+    const sum = dailyAmounts.slice(from-1, to).reduce((s,v)=>s+v, 0);
+    if(WEEKLY_REAL[brand] && WEEKLY_REAL[brand][channel] && WEEKLY_REAL[brand][channel][wIdx]){
+      WEEKLY_REAL[brand][channel][wIdx][5] = sum; // adspend 자리
+    }
+  });
+})();
+
+/* ===== 수동 보정: 네이버(스마트스토어) · 그라펜 · 5월 채널수수료 12,989,888원 균등 배분 =====
+   일 419,028.6452원 × 31일 = 12,989,888원. 채널수수료는 공헌이익 계산에 쓰이지 않는 정보성 항목이라
+   일별/월별 표시값만 갱신합니다 (공헌이익에는 영향 없음). */
+(function applyNaverMayFeeOverride(){
+  const brand = '그라펜', channel = '스마트스토어', monthIdx = 4; // 2026-05
+  const totalFee = 12989888;
+  const daysInMay = 31;
+  const perDayFee = totalFee/daysInMay; // 419,028.6452
+
+  for(let d=1; d<=daysInMay; d++){
+    const dateStr = `2026-05-${String(d).padStart(2,'0')}`;
+    const existing = DAILY_INDEX[brand][channel][dateStr] || {sellout:0,fee:0,sellin:0,cost:0,shipping:0,adspend:0,other:0,contribution:0};
+    existing.fee = perDayFee;
+    DAILY_INDEX[brand][channel][dateStr] = existing;
+  }
+
+  const monthRec = monthlyData[brand][channel][monthIdx];
+  monthRec.fee = totalFee;
+})();
+
 /* ============================= STATE ============================= */
 const state = {
   gran: 'month',
@@ -420,6 +486,7 @@ const state = {
   startDate: '2026-07-10', endDate: '2026-08-09',
   weekStart: 6, weekEnd: 7,
   pnlCompStart: null, pnlCompEnd: null,
+  vsMonth: null,
   brands: new Set(BRANDS),
   channels: new Set(CHANNELS),
   channelGroup: 'all'
@@ -478,6 +545,15 @@ MONTHS.forEach((m,i)=>{
 startMonthSel.value=0; endMonthSel.value=7;
 startMonthSel.onchange=()=>{state.startMonth=+startMonthSel.value; if(state.startMonth>state.endMonth){endMonthSel.value=state.startMonth; state.endMonth=state.startMonth;} renderAll();};
 endMonthSel.onchange=()=>{state.endMonth=+endMonthSel.value; if(state.endMonth<state.startMonth){startMonthSel.value=state.endMonth; state.startMonth=state.endMonth;} renderAll();};
+
+const vsMonthSel = document.getElementById('vsMonthSel');
+MONTHS.forEach((m,i)=>{
+  const o=document.createElement('option'); o.value=i; o.textContent=m; vsMonthSel.appendChild(o);
+});
+vsMonthSel.onchange=()=>{
+  state.vsMonth = vsMonthSel.value===''? null : +vsMonthSel.value;
+  renderAll();
+};
 
 document.getElementById('startDate').value=state.startDate;
 document.getElementById('endDate').value=state.endDate;
@@ -636,6 +712,7 @@ document.getElementById('resetBtn').onclick=()=>{
   state.startMonth=0; state.endMonth=7; startMonthSel.value=0; endMonthSel.value=7;
   state.weekStart=6; state.weekEnd=7; weekStartSel.value=6; weekEndSel.value=7;
   state.pnlCompStart=null; state.pnlCompEnd=null;
+  state.vsMonth=null; vsMonthSel.value='';
   state.brands = new Set(BRANDS); state.channels = new Set(CHANNELS); state.channelGroup='all';
   brandMselCtl.refreshChecks(); channelMselCtl.refreshChecks(); syncChannelChipFromState();
   renderAll();
@@ -673,14 +750,34 @@ function renderKPI(){
   const adRate = agg.sellin? agg.adspend/agg.sellin : 0;
   const feeRate = agg.sellin? agg.fee/agg.sellin : 0;
 
+  // 비교월(VS) 선택 시, 현재 조회 범위와 별개로 해당 단일 월과 비교한 증감을 함께 보여줍니다.
+  let vsAgg = null, vsRate = 0;
+  if(state.vsMonth!==null){
+    const brands = activeBrands(), channels = activeChannels();
+    vsAgg = sumRange(brands, channels, state.vsMonth, state.vsMonth);
+    vsRate = vsAgg.sellin? vsAgg.contribution/vsAgg.sellin : 0;
+  }
+  function vsLine(cur, base){
+    if(vsAgg===null) return '';
+    const pct = base? (cur-base)/Math.abs(base)*100 : (cur===0?0:100);
+    const cls = pct>=0?'up':'down';
+    return `<div class="delta ${cls}">${pct>=0?'+':''}${pct.toFixed(1)}% vs ${MONTHS_CLEAN[state.vsMonth]}</div>`;
+  }
+  function vsLinePP(curPct, basePct){
+    if(vsAgg===null) return '';
+    const diff = (curPct-basePct)*100;
+    const cls = diff>=0?'up':'down';
+    return `<div class="delta ${cls}">${diff>=0?'+':''}${diff.toFixed(1)}p vs ${MONTHS_CLEAN[state.vsMonth]}</div>`;
+  }
+
   const kpiGrid = document.getElementById('kpiGrid');
   kpiGrid.innerHTML = `
-    <div class="card kpi"><div class="label">셀아웃</div><div class="value">${fmtWon(agg.sellout)}</div></div>
-    <div class="card kpi"><div class="label">셀인</div><div class="value">${fmtWon(agg.sellin)}</div></div>
-    <div class="card kpi"><div class="label">원가</div><div class="value">${fmtWon(agg.cost)}</div></div>
-    <div class="card kpi"><div class="label">광고비</div><div class="value">${fmtWon(agg.adspend)}</div></div>
-    <div class="card kpi"><div class="label">공헌이익</div><div class="value" style="${agg.contribution<0?'color:var(--red)':''}">${fmtWon(agg.contribution)}</div></div>
-    <div class="card kpi"><div class="label">공헌이익률 <span style="font-weight:400;color:#9aa0b0;">(셀인 기준·P&L)</span></div><div class="value">${fmtPct(contribRate)}</div></div>
+    <div class="card kpi"><div class="label">셀아웃</div><div class="value">${fmtWon(agg.sellout)}</div>${vsAgg?vsLine(agg.sellout,vsAgg.sellout):''}</div>
+    <div class="card kpi"><div class="label">셀인</div><div class="value">${fmtWon(agg.sellin)}</div>${vsAgg?vsLine(agg.sellin,vsAgg.sellin):''}</div>
+    <div class="card kpi"><div class="label">원가</div><div class="value">${fmtWon(agg.cost)}</div>${vsAgg?vsLine(agg.cost,vsAgg.cost):''}</div>
+    <div class="card kpi"><div class="label">광고비</div><div class="value">${fmtWon(agg.adspend)}</div>${vsAgg?vsLine(agg.adspend,vsAgg.adspend):''}</div>
+    <div class="card kpi"><div class="label">공헌이익</div><div class="value" style="${agg.contribution<0?'color:var(--red)':''}">${fmtWon(agg.contribution)}</div>${vsAgg?vsLine(agg.contribution,vsAgg.contribution):''}</div>
+    <div class="card kpi"><div class="label">공헌이익률 <span style="font-weight:400;color:#9aa0b0;">(셀인 기준·P&L)</span></div><div class="value">${fmtPct(contribRate)}</div>${vsAgg?vsLinePP(contribRate,vsRate):''}</div>
     <div class="card kpi roas"><div class="label">ROAS (셀아웃 기준)</div><div class="value">${(roasSellout*100).toFixed(0)}%</div></div>
     <div class="card kpi roas"><div class="label">ROAS (셀인 기준)</div><div class="value">${(roasSellin*100).toFixed(0)}%</div></div>
   `;
@@ -692,7 +789,8 @@ function renderKPI(){
   const rangeTxt = state.gran==='day'
     ? `${state.startDate} ~ ${state.endDate}`
     : `${MONTHS_CLEAN[state.startMonth]} ~ ${MONTHS_CLEAN[state.endMonth]}`;
-  document.getElementById('dashSub').textContent = `${rangeTxt} · 브랜드 ${state.brands.size}개 · 채널 ${state.channels.size}개 기준`;
+  const vsTxt = state.vsMonth!==null ? ` · 비교월: ${MONTHS_CLEAN[state.vsMonth]} 대비 증감 표시 중` : '';
+  document.getElementById('dashSub').textContent = `${rangeTxt} · 브랜드 ${state.brands.size}개 · 채널 ${state.channels.size}개 기준${vsTxt}`;
 }
 
 /* ============================= RENDER: MINUS CHANNELS ============================= */
