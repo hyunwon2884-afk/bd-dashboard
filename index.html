@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>세이션 KR · 브랜드 성과 리포트</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{
   --bg:#f4f5f8;
@@ -287,7 +288,7 @@ tr.neg td{color:var(--red);}
             <div><div style="font-size:11px;color:var(--sub);">누적 공헌이익</div><div style="font-weight:800;font-size:15px;color:var(--red);" id="chAccProfit">-</div></div>
           </div>
         </div>
-        <canvas id="jasamoolChart" height="70" style="margin-top:12px;"></canvas>
+        <div style="position:relative;height:220px;margin-top:12px;"><canvas id="jasamoolChart"></canvas></div>
       </div>
 
       <div class="chart-grid">
@@ -308,8 +309,8 @@ tr.neg td{color:var(--red);}
         <div class="chart-title" id="monthChTitle">월별 채널 구성 - 셀아웃</div>
         <div class="chart-sub">월을 클릭하면 해당 월의 채널 구성으로 우측 도넛이 갱신됩니다.</div>
         <div style="display:flex;gap:16px;">
-          <canvas id="monthChannelStack" style="max-height:300px;flex:2;"></canvas>
-          <canvas id="monthChannelDonut" style="max-height:300px;flex:1;"></canvas>
+          <div style="position:relative;height:300px;flex:2;"><canvas id="monthChannelStack"></canvas></div>
+          <div style="position:relative;height:300px;flex:1;"><canvas id="monthChannelDonut"></canvas></div>
         </div>
       </div>
     </div>
@@ -319,16 +320,32 @@ tr.neg td{color:var(--red);}
       <div class="h1">손익 분석</div>
       <div class="h1-sub">브랜드/채널별 손익 구조와 월별 변동을 분석합니다.</div>
 
-      <div class="section-title">⚠ 공헌이익 마이너스 채널 (월별 손익 기준) <span class="desc" id="pnlMinusRangeLabel"></span></div>
+      <div class="section-title" style="justify-content:space-between;">
+        <span>⚠ 공헌이익 마이너스 채널 (월별 손익 기준) <span class="desc" id="pnlMinusRangeLabel"></span></span>
+        <button class="reset-btn" id="pnlMinusExcelBtn">⬇ 엑셀 다운로드</button>
+      </div>
       <div id="pnlMinusBox" class="card"></div>
 
-      <div class="section-title">📌 <span id="momTitle">상세 손익 비교 (보고용)</span><span class="desc">브랜드별 전 지표 상세 및 전월 대비 증감률. 증감률 셀을 클릭하면 채널별 상세가 펼쳐집니다.</span></div>
-      <input class="search-input" id="pnlSearch" placeholder="브랜드/월 검색...">
+      <div class="section-title" style="justify-content:space-between;">
+        <span>📌 <span id="momTitle">상세 손익 비교 (보고용)</span><span class="desc">브랜드별 전 지표 상세 및 전월 대비 증감률. 증감률 셀을 클릭하면 채널별 상세가 펼쳐집니다.</span></span>
+      </div>
+      <div class="tb-row" style="margin-bottom:12px;">
+        <div class="field">
+          <label>비교 대상월 (이전)</label>
+          <select id="pnlCompStartSel"></select>
+        </div>
+        <div class="field">
+          <label>비교 대상월 (이후)</label>
+          <select id="pnlCompEndSel"></select>
+        </div>
+        <input class="search-input" id="pnlSearch" placeholder="브랜드/월 검색..." style="align-self:flex-end;">
+        <button class="reset-btn" id="pnlExcelBtn" style="margin-left:auto;">⬇ 엑셀 다운로드</button>
+      </div>
       <div class="table-wrap">
         <table id="pnlTable">
           <thead>
             <tr>
-              <th>브랜드</th><th>월</th><th>셀아웃</th><th>셀인</th><th>채널수수료</th><th>원가</th><th>배송비</th><th>광고비</th><th>기타비용</th><th>공헌이익</th><th>공헌이익률</th><th>ROAS</th><th>전월대비(셀아웃)</th><th>전월대비(셀인)</th>
+              <th>브랜드</th><th>월</th><th>셀아웃</th><th>셀인</th><th>채널수수료</th><th>원가</th><th>배송비</th><th>광고비</th><th>기타비용</th><th>공헌이익(당월 금액)</th><th id="momHeaderProfit">증감액(공헌이익)</th><th>공헌이익률</th><th>ROAS</th><th id="momHeaderSellout">증감(셀아웃)</th><th id="momHeaderSellin">증감(셀인)</th>
             </tr>
           </thead>
           <tbody id="pnlBody"></tbody>
@@ -441,6 +458,7 @@ const state = {
   startMonth: 0, endMonth: 7,
   startDate: '2026-07-10', endDate: '2026-08-09',
   weekStart: 6, weekEnd: 7,
+  pnlCompStart: null, pnlCompEnd: null,
   brands: new Set(BRANDS),
   channels: new Set(CHANNELS),
   channelGroup: 'all'
@@ -520,6 +538,25 @@ weekStartSel.onchange=()=>{
 weekEndSel.onchange=()=>{
   state.weekEnd=+weekEndSel.value;
   if(state.weekEnd<state.weekStart){ state.weekStart=state.weekEnd; weekStartSel.value=state.weekEnd; }
+  renderAll();
+};
+
+const pnlCompStartSel = document.getElementById('pnlCompStartSel');
+const pnlCompEndSel = document.getElementById('pnlCompEndSel');
+MONTHS.forEach((m,i)=>{
+  const o1=document.createElement('option'); o1.value=i; o1.textContent=m; pnlCompStartSel.appendChild(o1);
+  const o2=document.createElement('option'); o2.value=i; o2.textContent=m; pnlCompEndSel.appendChild(o2);
+});
+pnlCompStartSel.onchange=()=>{
+  state.pnlCompStart = +pnlCompStartSel.value;
+  if(state.pnlCompEnd===null) state.pnlCompEnd = state.endMonth;
+  if(state.pnlCompStart>state.pnlCompEnd){ state.pnlCompEnd=state.pnlCompStart; pnlCompEndSel.value=state.pnlCompStart; }
+  renderAll();
+};
+pnlCompEndSel.onchange=()=>{
+  state.pnlCompEnd = +pnlCompEndSel.value;
+  if(state.pnlCompStart===null) state.pnlCompStart = state.startMonth;
+  if(state.pnlCompEnd<state.pnlCompStart){ state.pnlCompStart=state.pnlCompEnd; pnlCompStartSel.value=state.pnlCompEnd; }
   renderAll();
 };
 
@@ -637,6 +674,7 @@ document.getElementById('resetBtn').onclick=()=>{
   syncGranFieldVisibility();
   state.startMonth=0; state.endMonth=7; startMonthSel.value=0; endMonthSel.value=7;
   state.weekStart=6; state.weekEnd=7; weekStartSel.value=6; weekEndSel.value=7;
+  state.pnlCompStart=null; state.pnlCompEnd=null;
   state.brands = new Set(BRANDS); state.channels = new Set(CHANNELS); state.channelGroup='all';
   brandMselCtl.refreshChecks(); channelMselCtl.refreshChecks(); syncChannelChipFromState();
   renderAll();
@@ -1020,14 +1058,24 @@ function renderPnlTab(){
     box.innerHTML = minusRows.map(r=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line);"><span>${r.c}</span><b style="color:var(--red);">${fmtOk(r.contribution)}</b></div>`).join('');
   }
 
-  // dynamic comparison months: last two months within selected range (or only 1 if range is single month)
-  const compEnd = endM, compStart = Math.max(startM, endM-1);
-  document.getElementById('momTitle').textContent = `${MONTHS_CLEAN[compStart]}·${MONTHS_CLEAN[compEnd]} 상세 손익 비교 (보고용)`;
+  // 비교 대상월: 사용자가 상단에서 직접 고른 두 달을 우선 사용, 지정하지 않았다면 조회 범위의 마지막 두 달을 기본값으로 사용
+  let compStart, compEnd;
+  if(state.pnlCompStart!==null && state.pnlCompEnd!==null){
+    compStart = state.pnlCompStart; compEnd = state.pnlCompEnd;
+  } else {
+    compEnd = endM; compStart = Math.max(startM, endM-1);
+  }
+  document.getElementById('pnlCompStartSel').value = compStart;
+  document.getElementById('pnlCompEndSel').value = compEnd;
+  document.getElementById('momTitle').textContent = compStart===compEnd
+    ? `${MONTHS_CLEAN[compEnd]} 상세 손익 (보고용) · 비교할 이전월을 다르게 선택하면 증감률이 함께 표시됩니다`
+    : `${MONTHS_CLEAN[compStart]}·${MONTHS_CLEAN[compEnd]} 상세 손익 비교 (보고용)`;
 
+  const compMonths = compStart===compEnd ? [compEnd] : [compStart, compEnd];
   const rows = [];
   const brandList = ['전체 합계', ...brands];
   brandList.forEach(b=>{
-    [compStart, compEnd].forEach(m=>{
+    compMonths.forEach(m=>{
       const bset = b==='전체 합계' ? brands : [b];
       const agg = sumRange(bset, channels, m, m);
       rows.push({brand:b, m, agg});
@@ -1037,8 +1085,12 @@ function renderPnlTab(){
 
   const tbody = document.getElementById('pnlBody');
   tbody.innerHTML='';
+  const isMulti = compMonths.length>1;
+  document.getElementById('momHeaderProfit').textContent = isMulti ? `증감액 (${MONTHS_CLEAN[compStart]}→${MONTHS_CLEAN[compEnd]}, 공헌이익)` : '증감액(공헌이익)';
+  document.getElementById('momHeaderSellout').textContent = isMulti ? `증감률 (${MONTHS_CLEAN[compStart]}→${MONTHS_CLEAN[compEnd]}, 셀아웃)` : '증감률(셀아웃)';
+  document.getElementById('momHeaderSellin').textContent = isMulti ? `증감률 (${MONTHS_CLEAN[compStart]}→${MONTHS_CLEAN[compEnd]}, 셀인)` : '증감률(셀인)';
   brandList.forEach(b=>{
-    [compStart, compEnd].forEach(m=>{
+    compMonths.forEach(m=>{
       const cur = rows.find(r=>r.brand===b && r.m===m);
       const isFirst = m===compStart;
       const prevRow = rows.find(r=>r.brand===b && r.m===compStart);
@@ -1047,27 +1099,31 @@ function renderPnlTab(){
       const roas = a.adspend? a.sellin/a.adspend*100:0;
       const momSellout = isFirst? null : (a.sellout-prevRow.agg.sellout)/prevRow.agg.sellout*100;
       const momSellin = isFirst? null : (a.sellin-prevRow.agg.sellin)/prevRow.agg.sellin*100;
+      const profitDelta = isFirst? null : (a.contribution-prevRow.agg.contribution);
       const rowId = `pnlrow_${b}_${m}`.replace(/[^a-zA-Z0-9가-힣_]/g,'');
       const tr = document.createElement('tr');
       if(a.contribution<0) tr.classList.add('neg');
+      const monthTag = isMulti ? (isFirst ? ' <span class="tag">기준월</span>' : ' <span class="tag new">비교월</span>') : '';
       tr.innerHTML = `
-        <td>${b}</td><td>${MONTHS_CLEAN[m]}월</td>
+        <td>${b}</td><td>${MONTHS_CLEAN[m]}${monthTag}</td>
         <td>${fmt(a.sellout)}</td><td>${fmt(a.sellin)}</td><td>${fmt(a.fee)}</td><td>${fmt(a.cost)}</td>
         <td>${fmt(a.shipping)}</td><td>${fmt(a.adspend)}</td><td>${fmt(a.other)}</td>
-        <td>${fmt(a.contribution)}</td><td>${fmtPct(rate)}</td><td>${roas.toFixed(0)}%</td>
-        <td>${momSellout===null?'-':`<span class="mom-cell" data-row="${rowId}">${momSellout>=0?'+':''}${momSellout.toFixed(1)}%</span>`}</td>
-        <td>${momSellin===null?'-':`<span class="mom-cell" data-row="${rowId}">${momSellin>=0?'+':''}${momSellin.toFixed(1)}%</span>`}</td>
+        <td>${fmt(a.contribution)} 원</td>
+        <td>${profitDelta===null?'<span style="color:#aaa;">기준월</span>':`<span class="mom-cell" data-row="${rowId}" style="${profitDelta<0?'color:var(--red);':'color:var(--green);'}">${profitDelta>=0?'+':''}${fmt(profitDelta)} 원</span>`}</td>
+        <td>${fmtPct(rate)}</td><td>${roas.toFixed(0)}%</td>
+        <td>${momSellout===null?'<span style="color:#aaa;">기준월</span>':`<span class="mom-cell" data-row="${rowId}">${momSellout>=0?'+':''}${momSellout.toFixed(1)}%</span>`}</td>
+        <td>${momSellin===null?'<span style="color:#aaa;">기준월</span>':`<span class="mom-cell" data-row="${rowId}">${momSellin>=0?'+':''}${momSellin.toFixed(1)}%</span>`}</td>
       `;
       tbody.appendChild(tr);
       if(!isFirst && b!=='전체 합계'){
         const subTr = document.createElement('tr');
         subTr.className='sub-row hidden'; subTr.id='sub_'+rowId;
-        subTr.innerHTML = `<td colspan="14">${buildChannelDetailHtml(b, channels, compStart, compEnd)}</td>`;
+        subTr.innerHTML = `<td colspan="15">${buildChannelDetailHtml(b, channels, compStart, compEnd)}</td>`;
         tbody.appendChild(subTr);
       } else if(!isFirst && b==='전체 합계'){
         const subTr = document.createElement('tr');
         subTr.className='sub-row hidden'; subTr.id='sub_'+rowId;
-        subTr.innerHTML = `<td colspan="14">${buildChannelDetailHtml(null, channels, compStart, compEnd, brands)}</td>`;
+        subTr.innerHTML = `<td colspan="15">${buildChannelDetailHtml(null, channels, compStart, compEnd, brands)}</td>`;
         tbody.appendChild(subTr);
       }
     });
@@ -1086,19 +1142,21 @@ function buildChannelDetailHtml(brand, channels, mStart, mEnd, brandsForAll){
   const items = channels.map(c=>{
     const cur = sumRange(bset,[c],mEnd,mEnd);
     const prev = sumRange(bset,[c],mStart,mStart);
-    const momSO = prev.sellout? (cur.sellout-prev.sellout)/prev.sellout*100 : null;
     const momSI = prev.sellin? (cur.sellin-prev.sellin)/prev.sellin*100 : null;
-    return {c, cur, momSO, momSI};
-  }).filter(x=>x.cur.sellout>0 || x.cur.sellin>0).sort((a,b)=>b.cur.sellout-a.cur.sellout);
+    const profitDelta = (cur.sellin>0||prev.sellin>0) ? (cur.contribution-prev.contribution) : null;
+    return {c, cur, prevSellin:prev.sellin, prevContribution:prev.contribution, momSI, profitDelta};
+  }).filter(x=>x.cur.sellin>0 || x.prevSellin>0);
+  items.sort((a,b)=>b.cur.sellin-a.cur.sellin);
   return `<div style="padding:6px 4px;">
-    <div style="font-weight:700;font-size:11.5px;margin-bottom:6px;color:#555;">채널별 상세 (${brand?brand:'전체 브랜드 합계'} · ${MONTHS_CLEAN[mStart]}월→${MONTHS_CLEAN[mEnd]}월)</div>
+    <div style="font-weight:700;font-size:11.5px;margin-bottom:2px;color:#555;">채널별 상세 · ${brand?brand:'전체 브랜드 합계'}</div>
+    <div style="font-size:11px;color:var(--sub);margin-bottom:6px;">기준월 <b style="color:var(--ink);">${MONTHS_CLEAN[mStart]}</b> → 비교월 <b style="color:var(--ink);">${MONTHS_CLEAN[mEnd]}</b> 기준 채널별 증감입니다 (셀인 기준). "공헌이익" 열은 비교월의 <u>금액</u>, "증감액" 열은 기준월 대비 <u>변화분</u>입니다.</div>
     <table style="font-size:11.5px;">
-      <thead><tr><th>채널</th><th>셀아웃</th><th>셀인</th><th>공헌이익</th><th>전월대비(셀아웃)</th><th>전월대비(셀인)</th></tr></thead>
+      <thead><tr><th>채널</th><th>${MONTHS_CLEAN[mStart]} 셀인</th><th>${MONTHS_CLEAN[mEnd]} 셀인</th><th>${MONTHS_CLEAN[mEnd]} 원가</th><th>${MONTHS_CLEAN[mEnd]} 광고비</th><th>${MONTHS_CLEAN[mEnd]} 공헌이익(금액)</th><th>증감액(공헌이익)</th><th>증감률(셀인)</th></tr></thead>
       <tbody>
       ${items.map(it=>`<tr class="${it.cur.contribution<0?'neg':''}">
-        <td>${it.c}</td><td>${fmt(it.cur.sellout)}</td><td>${fmt(it.cur.sellin)}</td><td>${fmt(it.cur.contribution)}</td>
-        <td>${it.momSO===null?'-':(it.momSO>=0?'+':'')+it.momSO.toFixed(1)+'%'}</td>
-        <td>${it.momSI===null?'-':(it.momSI>=0?'+':'')+it.momSI.toFixed(1)+'%'}</td>
+        <td>${it.c}</td><td>${fmt(it.prevSellin)}</td><td>${fmt(it.cur.sellin)}</td><td>${fmt(it.cur.cost)}</td><td>${fmt(it.cur.adspend)}</td><td>${fmt(it.cur.contribution)} 원</td>
+        <td style="${it.profitDelta<0?'color:var(--red);':(it.profitDelta>0?'color:var(--green);':'')}">${it.profitDelta===null?'-':(it.profitDelta>=0?'+':'')+fmt(it.profitDelta)+' 원'}</td>
+        <td>${it.momSI===null?'<span style="color:#aaa;">신규</span>':(it.momSI>=0?'+':'')+it.momSI.toFixed(1)+'%'}</td>
       </tr>`).join('')}
       </tbody>
     </table>
@@ -1112,6 +1170,49 @@ function applyPnlSearch(){
     tr.style.display = (!q || txt.includes(q)) ? '' : 'none';
   });
 }
+
+/* ============================= EXCEL EXPORT ============================= */
+function exportTableToExcel(tableEl, filenameBase){
+  if(typeof XLSX==='undefined'){ alert('엑셀 내보내기 모듈을 불러오지 못했습니다. 네트워크 상태를 확인해주세요.'); return; }
+  const headers = [...tableEl.querySelectorAll('thead th')].map(th=>th.textContent.trim());
+  const rows = [...tableEl.querySelectorAll('tbody > tr:not(.sub-row)')]
+    .filter(tr=>tr.style.display!=='none')
+    .map(tr=>[...tr.children].map(td=>{
+      const t = td.textContent.trim();
+      const num = Number(t.replace(/,/g,'').replace('%',''));
+      return (t!=='' && t!=='-' && !isNaN(num) && /[\d]/.test(t)) ? num : t;
+    }));
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  ws['!cols'] = headers.map(()=>({wch:14}));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '데이터');
+  const rangeTag = state.gran==='day' ? `${state.startDate}_${state.endDate}` : `${MONTHS_CLEAN[state.startMonth]}-${MONTHS_CLEAN[state.endMonth]}`;
+  XLSX.writeFile(wb, `${filenameBase}_${rangeTag}.xlsx`);
+}
+document.getElementById('pnlExcelBtn').onclick = ()=>{
+  exportTableToExcel(document.getElementById('pnlTable'), '세이션KR_손익비교');
+};
+document.getElementById('pnlMinusExcelBtn').onclick = ()=>{
+  if(typeof XLSX==='undefined'){ alert('엑셀 내보내기 모듈을 불러오지 못했습니다. 네트워크 상태를 확인해주세요.'); return; }
+  const box = document.getElementById('pnlMinusBox');
+  const rowsEl = [...box.querySelectorAll(':scope > div')];
+  const data = [['채널','공헌이익(월별 손익 기준)']];
+  rowsEl.forEach(r=>{
+    const spans = r.children;
+    if(spans.length===2){
+      const ch = spans[0].textContent.trim();
+      const val = Number(spans[1].textContent.replace(/[^0-9-]/g,''));
+      data.push([ch, val]);
+    }
+  });
+  if(data.length===1){ data.push(['해당 없음 (적자 채널 없음)', '']); }
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  ws['!cols'] = [{wch:20},{wch:18}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '마이너스채널');
+  const rangeTag = state.gran==='day' ? `${state.startDate}_${state.endDate}` : `${MONTHS_CLEAN[state.startMonth]}-${MONTHS_CLEAN[state.endMonth]}`;
+  XLSX.writeFile(wb, `세이션KR_마이너스채널_${rangeTag}.xlsx`);
+};
 
 /* ============================= MASTER RENDER ============================= */
 function renderAll(){
