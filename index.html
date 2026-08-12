@@ -99,6 +99,29 @@ select, .date-input{border:1px solid var(--line);border-radius:8px;padding:7px 1
 .kpi .delta.up{color:var(--red);}
 .kpi .delta.down{color:#2a6fdb;}
 
+/* 매출(셀아웃) 히어로 카드 */
+.kpi.sellout-hero{background:linear-gradient(135deg,#eef0ff,#f8f7ff);border-color:#c9c8f7;}
+.kpi.sellout-hero .label{color:#5b52c9;}
+.kpi.sellout-hero .value{color:#4a3fc7;}
+
+/* 공헌이익 포인트 카드 */
+.kpi.profit-point{background:linear-gradient(135deg,#f3fbf7,#fff);border-color:var(--green);}
+.kpi.profit-point .label{color:#177a52;}
+.kpi.profit-point .value{color:var(--green);}
+.kpi.profit-point .value.neg{color:var(--red);}
+
+/* 비용 항목(원가/광고비/배송비)을 한 줄로 묶은 카드 */
+.cost-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-top:12px;display:flex;}
+.cost-item{flex:1;padding:14px 18px;cursor:pointer;position:relative;min-width:0;}
+.cost-item:not(:last-child){border-right:1px solid var(--line);}
+.cost-item:hover{background:#fafafe;}
+.cost-item .label{font-size:12px;color:var(--sub);font-weight:600;margin-bottom:6px;}
+.cost-item .value{font-size:17px;font-weight:800;}
+.cost-item .kpi-expand-note{font-size:10px;margin-top:6px;}
+.cost-item .kpi-breakdown{max-height:200px;}
+
+.roas-row{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px;}
+
 .ratio-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px;}
 .ratio-grid .card .value{font-size:19px;font-weight:800;}
 
@@ -266,6 +289,8 @@ tr.neg td{color:var(--red);}
       <div class="goal-hero" id="goalHero"></div>
 
       <div class="kpi-grid" id="kpiGrid"></div>
+      <div class="cost-card" id="costRow"></div>
+      <div class="roas-row" id="roasRow"></div>
       <div class="ratio-grid" id="ratioGrid"></div>
 
       <div class="section-title">⚠ 공헌이익 마이너스 채널 <span class="tag warn">별도 카드</span><span class="desc">선택한 기간·브랜드 기준, 공헌이익이 적자인 채널만 모았습니다. 카드를 클릭하면 브랜드별 상세가 펼쳐집니다.</span></div>
@@ -408,7 +433,8 @@ const MONTHS = ['1월','2월','3월','4월','5월','6월','7월','8월*'];
 const MONTHS_CLEAN = MONTHS.map(m=>m.replace('*',''));
 const BRANDS = ['그라펜','스탠다드서울','줄라이미'];
 // 애슬러, 현대이지웰, 지애드 채널은 요청에 따라 목록에서 제외되었습니다. (실제 원본 데이터 기준 29개 채널)
-const CHANNELS = ["11번가", "29CM", "KKST", "SI.V", "SSF", "SSG", "굿트리", "글로우업리즈", "기타 채널", "무신사", "무신사(오프라인)", "비그룸", "스마트스토어", "스탠다드 서울", "아워픽", "아트박스", "에이블리", "오늘의집", "이크빈", "자사몰", "지그재그", "지마켓/옥션", "카카오톡 선물하기", "카카오톡스토어", "쿠팡(그로스)", "쿠팡(로켓)", "토스쇼핑", "트레져헌터", "헤메코랩"];
+// "스탠다드 서울" 채널은 브랜드명("스탠다드서울")과의 띄어쓰기 혼동으로 잘못 생성된 항목이라 삭제 요청에 따라 제외했습니다.
+const CHANNELS = ["11번가", "29CM", "KKST", "SI.V", "SSF", "SSG", "굿트리", "글로우업리즈", "기타 채널", "무신사", "무신사(오프라인)", "비그룸", "스마트스토어", "아워픽", "아트박스", "에이블리", "오늘의집", "이크빈", "자사몰", "지그재그", "지마켓/옥션", "카카오톡 선물하기", "카카오톡스토어", "쿠팡(그로스)", "쿠팡(로켓)", "토스쇼핑", "트레져헌터", "헤메코랩"];
 // "카카오톡딜"은 실제 데이터에 없는 채널명이라 동일 계열인 "카카오톡스토어"로 대체했습니다.
 const MAIN_ONLINE_CHANNELS = ['쿠팡(그로스)','쿠팡(로켓)','무신사','무신사(오프라인)','카카오톡 선물하기','카카오톡스토어','스마트스토어'];
 
@@ -870,14 +896,21 @@ function renderKPI(){
       <div class="track"><div class="fill ${targetBarCls}" style="width:${Math.min(100,targetPct)}%;"></div></div>
       <div class="txt"><span>목표 달성률</span><span><b>${targetPct.toFixed(0)}%</b> (목표 ${fmtWon(agg.target)})</span></div>
     </div>`;
+  // 상단 4개: 매출(셀아웃)은 배경으로, 공헌이익은 포인트 컬러로 강조. 나머지 4개 지표(원가·광고비·배송비·ROAS)는 아래 별도 줄로 정리.
   kpiGrid.innerHTML = `
-    <div class="card kpi"><div class="label">셀아웃</div><div class="value">${fmtWon(agg.sellout)}</div>${vsAgg?vsLine(agg.sellout,vsAgg.sellout):''}${targetBarHtml}</div>
+    <div class="card kpi sellout-hero"><div class="label">셀아웃 (매출)</div><div class="value">${fmtWon(agg.sellout)}</div>${vsAgg?vsLine(agg.sellout,vsAgg.sellout):''}${targetBarHtml}</div>
     <div class="card kpi clickable" data-metric="sellin"><div class="label">셀인</div><div class="value">${fmtWon(agg.sellin)}</div>${vsAgg?vsLine(agg.sellin,vsAgg.sellin):''}<div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-sellin"></div></div>
-    <div class="card kpi clickable" data-metric="cost"><div class="label">원가</div><div class="value">${fmtWon(agg.cost)}</div>${vsAgg?vsLine(agg.cost,vsAgg.cost):''}<div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-cost"></div></div>
-    <div class="card kpi clickable" data-metric="adspend"><div class="label">광고비</div><div class="value">${fmtWon(agg.adspend)}</div>${vsAgg?vsLine(agg.adspend,vsAgg.adspend):''}<div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-adspend"></div></div>
-    <div class="card kpi clickable" data-metric="shipping"><div class="label">배송비</div><div class="value">${fmtWon(agg.shipping)}</div>${vsAgg?vsLine(agg.shipping,vsAgg.shipping):''}<div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-shipping"></div></div>
-    <div class="card kpi clickable" data-metric="contribution"><div class="label">공헌이익</div><div class="value" style="${agg.contribution<0?'color:var(--red)':''}">${fmtWon(agg.contribution)}</div>${vsAgg?vsLine(agg.contribution,vsAgg.contribution):''}<div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-contribution"></div></div>
+    <div class="card kpi profit-point clickable" data-metric="contribution"><div class="label">공헌이익</div><div class="value ${agg.contribution<0?'neg':''}">${fmtWon(agg.contribution)}</div>${vsAgg?vsLine(agg.contribution,vsAgg.contribution):''}<div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-contribution"></div></div>
     <div class="card kpi"><div class="label">공헌이익률 <span style="font-weight:400;color:#9aa0b0;">(셀인 기준·P&L)</span></div><div class="value">${fmtPct(contribRate)}</div>${vsAgg?vsLinePP(contribRate,vsRate):''}</div>
+  `;
+  const costRow = document.getElementById('costRow');
+  costRow.innerHTML = `
+    <div class="cost-item clickable" data-metric="cost"><div class="label">원가</div><div class="value">${fmtWon(agg.cost)}</div>${vsAgg?vsLine(agg.cost,vsAgg.cost):''}<div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-cost"></div></div>
+    <div class="cost-item clickable" data-metric="adspend"><div class="label">광고비</div><div class="value">${fmtWon(agg.adspend)}</div>${vsAgg?vsLine(agg.adspend,vsAgg.adspend):''}<div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-adspend"></div></div>
+    <div class="cost-item clickable" data-metric="shipping"><div class="label">배송비</div><div class="value">${fmtWon(agg.shipping)}</div>${vsAgg?vsLine(agg.shipping,vsAgg.shipping):''}<div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-shipping"></div></div>
+  `;
+  const roasRow = document.getElementById('roasRow');
+  roasRow.innerHTML = `
     <div class="card kpi roas"><div class="label">ROAS (셀아웃 기준)</div><div class="value">${(roasSellout*100).toFixed(0)}%</div></div>
     <div class="card kpi roas"><div class="label">ROAS (셀인 기준)</div><div class="value">${(roasSellin*100).toFixed(0)}%</div></div>
   `;
@@ -896,7 +929,7 @@ function renderKPI(){
 
 /* 셀인/원가/광고비/배송비/공헌이익 카드 클릭 시, 채널별 상세를 값이 큰 순으로 바로 아래에 펼쳐서 보여줍니다. */
 function wireKpiBreakdownClicks(totalAgg){
-  document.querySelectorAll('.kpi.clickable').forEach(card=>{
+  document.querySelectorAll('.kpi.clickable, .cost-item.clickable').forEach(card=>{
     const metric = card.dataset.metric;
     card.onclick = ()=>{
       const bd = document.getElementById('bd-'+metric);
@@ -1418,7 +1451,8 @@ function renderAll(){
   const activeTab = document.querySelector('.nav-item.active').dataset.tab;
   const rangeTxt = state.gran==='day' ? `${state.startDate} ~ ${state.endDate}` : `${MONTHS_CLEAN[state.startMonth]}~${MONTHS[state.endMonth]}`;
   const grpLabelMap = {all:'전체 채널', main:'온라인 메인채널', exclude_jasa:'자사몰 제외', only_jasa:'자사몰만'};
-  document.getElementById('rangeHint').textContent = `* 8월은 08/09까지 집계된 데이터입니다 · 현재 조회 범위: ${rangeTxt} · 채널 그룹: ${grpLabelMap[state.channelGroup]||'사용자 지정'}`;
+  const grpDetailTxt = state.channelGroup==='main' ? ` (${MAIN_ONLINE_CHANNELS.join(', ')})` : '';
+  document.getElementById('rangeHint').innerHTML = `* 8월은 08/09까지 집계된 데이터입니다 · 현재 조회 범위: ${rangeTxt} · 채널 그룹: ${grpLabelMap[state.channelGroup]||'사용자 지정'}<span style="color:#c3c7d1;">${grpDetailTxt}</span>`;
   if(activeTab==='dashboard'){ renderGoalHero(); renderKPI(); renderMinusChannels(); renderTrendCharts(); renderWoW(); }
   if(activeTab==='brand'){ renderBrandTab(); }
   if(activeTab==='channel'){ renderChannelTab(); }
