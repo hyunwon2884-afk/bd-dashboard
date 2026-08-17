@@ -294,6 +294,12 @@ tr.neg td{color:var(--red);}
       <div class="h1">대시보드</div>
       <div class="h1-sub" id="dashSub">브랜드 전체 셀아웃·셀인·손익 현황을 한눈에 확인합니다.</div>
 
+      <div class="card chart-card" style="margin-bottom:18px;">
+        <div class="chart-title">월별 핵심 지표 추이</div>
+        <div class="chart-sub" id="topTrendSub">셀아웃·셀인·광고비·공헌이익(막대/선, 좌측 축) 및 공헌이익률(선, 우측 축) · 선택한 브랜드·채널 기준 1월~8월</div>
+        <div class="canvas-wrap" style="height:300px;"><canvas id="topTrendChart"></canvas></div>
+      </div>
+
       <div class="goal-hero" id="goalHero"></div>
 
       <div class="kpi-grid" id="kpiGrid"></div>
@@ -846,6 +852,29 @@ function upsertChart(id, config){
 const PALETTE = ['#6a5cf5','#2aa9a0','#d9b25c','#e0435b','#3b82f6','#a78bfa','#f59e0b','#10b981','#ec4899','#64748b','#84cc16','#06b6d4','#eab308','#f97316','#7c3aed'];
 
 /* ============================= RENDER: KPI ============================= */
+/* ============================= RENDER: TOP TREND CHART (최상단 월별 핵심 지표 추이) ============================= */
+function renderTopTrendChart(){
+  const brands = activeBrands(), channels = activeChannels();
+  const labels = MONTHS;
+  const selloutArr=[], sellinArr=[], adArr=[], profitArr=[], rateArr=[];
+  for(let m=0;m<8;m++){
+    const agg = sumRange(brands, channels, m, m);
+    selloutArr.push(agg.sellout); sellinArr.push(agg.sellin); adArr.push(agg.adspend);
+    profitArr.push(agg.contribution); rateArr.push(agg.sellin? agg.contribution/agg.sellin*100 : 0);
+  }
+  document.getElementById('topTrendSub').textContent = `셀아웃·셀인·광고비·공헌이익(막대/선, 좌측 축) 및 공헌이익률(선, 우측 축) · 브랜드 ${brands.length}개 · 채널 ${channels.length}개 · 1월~8월`;
+  upsertChart('topTrendChart',{type:'bar',data:{labels,datasets:[
+    {type:'bar',label:'셀아웃',data:selloutArr,backgroundColor:'rgba(106,92,245,.55)',order:4},
+    {type:'line',label:'셀인',data:sellinArr,borderColor:'#d9b25c',backgroundColor:'#d9b25c',tension:.3,order:3},
+    {type:'line',label:'광고비',data:adArr,borderColor:'#e0435b',backgroundColor:'#e0435b',tension:.3,order:2,borderDash:[4,3]},
+    {type:'line',label:'공헌이익',data:profitArr,borderColor:'#1f9d6f',backgroundColor:'#1f9d6f',tension:.3,order:1,borderWidth:3},
+    {type:'line',label:'공헌이익률',data:rateArr,borderColor:'#2a6fdb',backgroundColor:'#2a6fdb',yAxisID:'y1',tension:.3,order:0,borderDash:[2,2]}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{
+    y:{ticks:{callback:v=>(v/1e6).toFixed(0)+'M'}},
+    y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>v+'%'}}
+  }}});
+}
+
 /* ============================= RENDER: GOAL HERO (목표매출 대비 달성률) ============================= */
 function renderGoalHero(){
   const el = document.getElementById('goalHero');
@@ -1534,7 +1563,7 @@ function renderAll(){
   const grpLabelMap = {all:'전체 채널', main:'온라인 메인채널', exclude_jasa:'자사몰 제외', only_jasa:'자사몰만'};
   const grpDetailTxt = state.channelGroup==='main' ? ` (${MAIN_ONLINE_CHANNELS.join(', ')})` : '';
   document.getElementById('rangeHint').innerHTML = `* 8월은 08/09까지 집계된 데이터입니다 · 현재 조회 범위: ${rangeTxt} · 채널 그룹: ${grpLabelMap[state.channelGroup]||'사용자 지정'}<span style="color:#c3c7d1;">${grpDetailTxt}</span>`;
-  if(activeTab==='dashboard'){ renderGoalHero(); renderKPI(); renderMinusChannels(); renderTrendCharts(); renderWoW(); }
+  if(activeTab==='dashboard'){ renderTopTrendChart(); renderGoalHero(); renderKPI(); renderMinusChannels(); renderTrendCharts(); renderWoW(); }
   if(activeTab==='brand'){ renderBrandTab(); }
   if(activeTab==='channel'){ renderChannelTab(); }
   if(activeTab==='pnl'){ renderPnlTab(); }
