@@ -305,7 +305,7 @@ tr.neg td{color:var(--red);}
       <div class="minus-grid" id="minusGrid"></div>
 
       <div class="card chart-card" style="margin-bottom:18px;margin-top:18px;">
-        <div class="chart-title">월별 핵심 지표 추이</div>
+        <div class="chart-title" id="topTrendTitle">핵심 지표 추이</div>
         <div class="chart-sub" id="topTrendSub">셀아웃·셀인·광고비·공헌이익(막대/선, 좌측 축) 및 공헌이익률(선, 우측 축) · 선택한 브랜드·채널 기준 1월~8월</div>
         <div class="canvas-wrap" style="height:300px;"><canvas id="topTrendChart"></canvas></div>
       </div>
@@ -335,7 +335,7 @@ tr.neg td{color:var(--red);}
       <div class="chart-grid" style="margin-top:14px;">
         <div class="card chart-card">
           <div class="chart-title">주차별 셀아웃 추이 (최근 8주)</div>
-          <div class="chart-sub">ISO 주차 기준 셀아웃·공헌이익 추이</div>
+          <div class="chart-sub">ISO 주차 기준 셀아웃·공헌이익 추이 · 막대를 클릭하면 그 주와 직전 주를 비교 대상으로 바로 선택합니다</div>
           <div class="canvas-wrap"><canvas id="wowTrendChart"></canvas></div>
         </div>
         <div class="card chart-card">
@@ -490,7 +490,9 @@ tr.neg td{color:var(--red);}
     <!-- ============ DETAIL DATA TAB ============ -->
     <div id="tab-detail" style="display:none;">
       <div class="h1">상세 데이터</div>
-      <div class="h1-sub">브랜드·채널별 원본 지표를 월별/주차별/일별로 상세 조회합니다. 상단 필터의 브랜드·채널 선택이 그대로 적용됩니다.</div>
+      <div class="h1-sub" id="detailSummaryHeader">브랜드·채널별 원본 지표를 월별/주차별/일별로 상세 조회합니다. 상단 필터의 브랜드·채널 선택이 그대로 적용됩니다.</div>
+
+      <div class="kpi-grid" id="detailSummaryGrid" style="margin-bottom:18px;"></div>
 
       <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:10px;">
         <div>
@@ -778,6 +780,13 @@ function currentAgg(){
   if(state.gran==='week') return sumWeekRange(brands, channels, Math.min(state.weekStart,state.weekEnd), Math.max(state.weekStart,state.weekEnd));
   return sumRange(brands, channels, state.startMonth, state.endMonth);
 }
+// 보기 기준(일별/주별/월별)에 상관없이 항상 현재 선택된 범위를 정확히 반영하는 공용 집계 함수.
+// 각 탭에서 이 함수를 쓰면 "월별로만 계산되는" 버그를 방지할 수 있습니다.
+function aggFor(brands, channels){
+  if(state.gran==='day') return sumDayRange(brands, channels, state.startDate, state.endDate);
+  if(state.gran==='week') return sumWeekRange(brands, channels, Math.min(state.weekStart,state.weekEnd), Math.max(state.weekStart,state.weekEnd));
+  return sumRange(brands, channels, state.startMonth, state.endMonth);
+}
 function activeChannels(){ return [...state.channels]; }
 function activeBrands(){ return [...state.brands]; }
 
@@ -1035,6 +1044,8 @@ function renderTopTrendChart(){
     granTxt = `${MONTHS_CLEAN[state.startMonth]}~${MONTHS[state.endMonth]} (월별)`;
   }
 
+  const granTitle = state.gran==='week' ? '주별' : state.gran==='day' ? '일별' : '월별';
+  document.getElementById('topTrendTitle').textContent = `${granTitle} 핵심 지표 추이`;
   document.getElementById('topTrendSub').textContent = `셀아웃·셀인·광고비·공헌이익(막대/선, 좌측 축) 및 공헌이익률(선, 우측 축) · 브랜드 ${brands.length}개 · 채널 ${channels.length}개 · ${granTxt}`;
   upsertChart('topTrendChart',{type:'bar',data:{labels,datasets:[
     {type:'bar',label:'셀아웃',data:selloutArr,backgroundColor:'rgba(106,92,245,.55)',order:4},
@@ -1185,9 +1196,10 @@ function wireKpiBreakdownClicks(totalAgg){
 function buildKpiBreakdownHtml(metric, totalVal){
   const brands = activeBrands(), channels = activeChannels();
   const rows = channels.map(c=>{
-    const agg = state.gran==='day'
-      ? sumDayRange(brands,[c],state.startDate,state.endDate)
-      : sumRange(brands,[c],state.startMonth,state.endMonth);
+    let agg;
+    if(state.gran==='day') agg = sumDayRange(brands,[c],state.startDate,state.endDate);
+    else if(state.gran==='week') agg = sumWeekRange(brands,[c],Math.min(state.weekStart,state.weekEnd),Math.max(state.weekStart,state.weekEnd));
+    else agg = sumRange(brands,[c],state.startMonth,state.endMonth);
     return {channel:c, value: agg[metric]||0};
   }).filter(r=>r.value!==0);
   rows.sort((a,b)=>Math.abs(b.value)-Math.abs(a.value)); // 절대값 큰 순
@@ -1337,7 +1349,22 @@ function renderWoW(){
     {type:'line',label:'공헌이익',data:profitSeries,borderColor:'#e0435b',yAxisID:'y1',tension:.3}
   ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{
     y:{ticks:{callback:v=>(v/1e6).toFixed(0)+'M'}}, y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>(v/1e6).toFixed(0)+'M'}}
-  }}});
+  }},
+  onClick:(evt,elements)=>{
+    if(!elements.length) return;
+    const clickedIdx = elements[0].index;
+    // 클릭한 막대를 "비교 대상 주차(이후)"로, 그 직전 주를 "비교 기준 주차(이전)"로 자동 설정
+    state.weekEnd = clickedIdx;
+    state.weekStart = Math.max(0, clickedIdx-1);
+    weekStartSel.value = state.weekStart; weekEndSel.value = state.weekEnd;
+    if(state.gran!=='week'){
+      state.gran='week';
+      document.querySelectorAll('#granSeg button').forEach(b=>b.classList.toggle('active', b.dataset.g==='week'));
+      syncGranFieldVisibility();
+    }
+    renderAll();
+  }
+  });
 
   // brand WoW comparison (prev vs cur week per brand)
   const brandLabels = brands;
@@ -1354,12 +1381,9 @@ function renderWoW(){
 function renderBrandTab(){
   const channels = activeChannels();
   const labels = BRANDS.filter(b=>state.brands.has(b));
-  const selloutVals = labels.map(b=>{
-    const agg = state.gran==='day'? sumDayRange([b],channels,state.startDate,state.endDate) : sumRange([b],channels,state.startMonth,state.endMonth);
-    return agg.sellout;
-  });
+  const selloutVals = labels.map(b=> aggFor([b],channels).sellout);
   const rateVals = labels.map(b=>{
-    const agg = state.gran==='day'? sumDayRange([b],channels,state.startDate,state.endDate) : sumRange([b],channels,state.startMonth,state.endMonth);
+    const agg = aggFor([b],channels);
     return agg.sellin? agg.contribution/agg.sellin*100:0;
   });
   upsertChart('brandSelloutChart',{type:'bar',data:{labels,datasets:[{label:'셀아웃',data:selloutVals,backgroundColor:PALETTE.slice(0,labels.length)}]},options:{plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>(v/1e6).toFixed(0)+'M'}}}}});
@@ -1384,11 +1408,13 @@ function renderChannelTab(){
       jSellout.push(ms); jRate.push(msi?mc/msi*100:0);
     }
   }
-  const lastIdx = state.gran==='day'? 7 : state.endMonth;
-  const lastAgg = sumRange(brands,['자사몰'],lastIdx,lastIdx);
-  const accAgg = sumRange(brands,['자사몰'], state.startMonth, state.endMonth); // 선택한 조회 기간 전체 누적
-  document.getElementById('ch7Label').textContent = `${MONTHS[lastIdx]} 셀아웃`;
-  document.getElementById('ch7pLabel').textContent = `${MONTHS[lastIdx]} 공헌이익`;
+  const lastAgg = aggFor(brands,['자사몰']);
+  const accAgg = aggFor(brands,['자사몰']); // 선택한 조회 기간 전체 누적 (일별/주별/월별 공통)
+  const lastLabel = state.gran==='week'
+    ? `${WEEK_LABELS[Math.min(state.weekStart,state.weekEnd)]}~${WEEK_LABELS[Math.max(state.weekStart,state.weekEnd)]}`
+    : state.gran==='day' ? `${state.startDate}~${state.endDate}` : MONTHS[state.gran==='day'?7:state.endMonth];
+  document.getElementById('ch7Label').textContent = `${lastLabel} 셀아웃`;
+  document.getElementById('ch7pLabel').textContent = `${lastLabel} 공헌이익`;
   document.getElementById('ch7Sellout').textContent = fmtWon(lastAgg.sellout);
   document.getElementById('ch7Profit').textContent = fmtOk(lastAgg.contribution);
   document.getElementById('chAccProfit').textContent = fmtOk(accAgg.contribution);
@@ -1400,9 +1426,9 @@ function renderChannelTab(){
     y:{ticks:{callback:v=>(v/1e6).toFixed(0)+'M'}}, y1:{position:'right',min:-100,max:40,grid:{drawOnChartArea:false},ticks:{callback:v=>v+'%'}}
   }}});
 
-  // channel ranking
+  // channel ranking (보기 기준에 맞춰 정확한 범위로 집계)
   const chRows = channels.map(c=>{
-    const agg = state.gran==='day'? sumDayRange(brands,[c],state.startDate,state.endDate) : sumRange(brands,[c],state.startMonth,state.endMonth);
+    const agg = aggFor(brands,[c]);
     return {c, sellout:agg.sellout, rate: agg.sellin? agg.contribution/agg.sellin*100:0};
   }).sort((a,b)=>b.sellout-a.sellout).slice(0,10);
   upsertChart('channelSelloutChart',{type:'bar',data:{labels:chRows.map(r=>r.c),datasets:[{data:chRows.map(r=>r.sellout),backgroundColor:chRows.map(r=>r.rate<0?'#e0435b':'#6a5cf5')}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>(v/1e6).toFixed(0)+'M'}}}}});
@@ -1758,9 +1784,27 @@ document.getElementById('detailExcelBtn').onclick = ()=>{
   exportTableToExcel(document.getElementById('detailTable'), `세이션KR_상세데이터_${state.gran}`);
 };
 
+function renderDetailSummary(brands, channels){
+  const agg = aggFor(brands, channels);
+  const contribRate = agg.sellin? agg.contribution/agg.sellin*100 : 0;
+  const rangeTxt = state.gran==='day' ? `${state.startDate}~${state.endDate}`
+    : state.gran==='week' ? `${WEEK_LABELS[Math.min(state.weekStart,state.weekEnd)]}~${WEEK_LABELS[Math.max(state.weekStart,state.weekEnd)]}`
+    : `${MONTHS_CLEAN[state.startMonth]}~${MONTHS[state.endMonth]}`;
+  const granLabel = state.gran==='month' ? '월별' : state.gran==='week' ? '주차별' : '일별';
+  document.getElementById('detailSummaryHeader').textContent = `상단 카드에서 월별/주차별/일별을 클릭하면 해당 기준으로 요약이 바뀝니다 · 현재: ${granLabel} · ${rangeTxt}`;
+  document.getElementById('detailSummaryGrid').innerHTML = `
+    <div class="card kpi"><div class="label">셀아웃</div><div class="value">${fmtWon(agg.sellout)}</div></div>
+    <div class="card kpi"><div class="label">셀인</div><div class="value">${fmtWon(agg.sellin)}</div></div>
+    <div class="card kpi"><div class="label">광고비</div><div class="value">${fmtWon(agg.adspend)}</div></div>
+    <div class="card kpi profit-point"><div class="label">공헌이익</div><div class="value ${agg.contribution<0?'neg':''}">${fmtWon(agg.contribution)}</div></div>
+    <div class="card kpi"><div class="label">공헌이익률 <span style="font-weight:400;color:#9aa0b0;">(셀인 기준)</span></div><div class="value">${contribRate.toFixed(1)}%</div></div>
+  `;
+}
+
 function renderDetailTab(){
   document.querySelectorAll('#detailGranSeg button').forEach(b=>b.classList.toggle('active', b.dataset.g===state.gran));
   const brands = activeBrands(), channels = activeChannels();
+  renderDetailSummary(brands, channels);
   const q = document.getElementById('detailSearch').value.trim();
   let rows = [];
 
