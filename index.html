@@ -47,7 +47,7 @@ body{margin:0;font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",-app
 
 /* Main */
 .main{flex:1;min-width:0;padding:22px 26px 60px;}
-.topbar{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 18px;box-shadow:var(--shadow);margin-bottom:18px;}
+.topbar{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 18px;box-shadow:var(--shadow);margin-bottom:18px;position:sticky;top:0;z-index:60;}
 .tb-row{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;}
 .field{display:flex;flex-direction:column;gap:6px;}
 .field label{font-size:11px;color:var(--sub);font-weight:600;}
@@ -295,12 +295,6 @@ tr.neg td{color:var(--red);}
       <div class="h1">대시보드</div>
       <div class="h1-sub" id="dashSub">브랜드 전체 셀아웃·셀인·손익 현황을 한눈에 확인합니다.</div>
 
-      <div class="card chart-card" style="margin-bottom:18px;">
-        <div class="chart-title">월별 핵심 지표 추이</div>
-        <div class="chart-sub" id="topTrendSub">셀아웃·셀인·광고비·공헌이익(막대/선, 좌측 축) 및 공헌이익률(선, 우측 축) · 선택한 브랜드·채널 기준 1월~8월</div>
-        <div class="canvas-wrap" style="height:300px;"><canvas id="topTrendChart"></canvas></div>
-      </div>
-
       <div class="goal-hero" id="goalHero"></div>
 
       <div class="kpi-grid" id="kpiGrid"></div>
@@ -310,17 +304,29 @@ tr.neg td{color:var(--red);}
       <div class="section-title">⚠ 공헌이익 마이너스 채널 <span class="tag warn">별도 카드</span><span class="desc">선택한 기간·브랜드 기준, 공헌이익이 적자인 채널만 모았습니다. 카드를 클릭하면 브랜드별 상세가 펼쳐집니다.</span></div>
       <div class="minus-grid" id="minusGrid"></div>
 
-      <div class="section-title">기간별 추이 <span class="desc">선택 필터 반영</span></div>
-      <div class="chart-grid">
+      <div class="card chart-card" style="margin-bottom:18px;margin-top:18px;">
+        <div class="chart-title">월별 핵심 지표 추이</div>
+        <div class="chart-sub" id="topTrendSub">셀아웃·셀인·광고비·공헌이익(막대/선, 좌측 축) 및 공헌이익률(선, 우측 축) · 선택한 브랜드·채널 기준 1월~8월</div>
+        <div class="canvas-wrap" style="height:300px;"><canvas id="topTrendChart"></canvas></div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:10px;">
+        <div class="h1-sub" style="margin:0;" id="dashboardChartHeader">브랜드별 추이</div>
+        <div class="seg" id="dashboardChartGroupSeg">
+          <button data-group="brand" class="active">브랜드별</button>
+          <button data-group="channel">채널별</button>
+        </div>
+      </div>
+      <div class="chart-grid" style="margin-bottom:18px;">
         <div class="card chart-card">
-          <div class="chart-title">셀아웃 / 셀인 추이</div>
-          <div class="chart-sub" id="trendSub1">기간별 매출(셀아웃) 및 순매출(셀인) 금액 추이</div>
-          <div class="canvas-wrap"><canvas id="trendChart"></canvas></div>
+          <div class="chart-title">셀아웃 추이</div>
+          <div class="chart-sub" id="dashboardChartSub1">브랜드별 색상 구분</div>
+          <div class="canvas-wrap"><canvas id="dashboardTrendChartSellout"></canvas></div>
         </div>
         <div class="card chart-card">
           <div class="chart-title">공헌이익 추이</div>
-          <div class="chart-sub" id="trendSub2">공헌이익(막대) 및 공헌이익률(선, 공헌이익÷셀인) 추이</div>
-          <div class="canvas-wrap"><canvas id="profitChart"></canvas></div>
+          <div class="chart-sub" id="dashboardChartSub2">브랜드별 색상 구분</div>
+          <div class="canvas-wrap"><canvas id="dashboardTrendChartProfit"></canvas></div>
         </div>
       </div>
 
@@ -486,10 +492,26 @@ tr.neg td{color:var(--red);}
       <div class="h1">상세 데이터</div>
       <div class="h1-sub">브랜드·채널별 원본 지표를 월별/주차별/일별로 상세 조회합니다. 상단 필터의 브랜드·채널 선택이 그대로 적용됩니다.</div>
 
-      <div class="card chart-card" style="margin-bottom:18px;">
-        <div class="chart-title">브랜드별 추이</div>
-        <div class="chart-sub" id="detailChartSub">셀아웃(막대) · 공헌이익(선) · 브랜드별 색상 구분</div>
-        <div class="canvas-wrap" style="height:300px;"><canvas id="detailTrendChart"></canvas></div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:10px;">
+        <div>
+          <div class="h1-sub" style="margin:0;" id="detailChartHeader">브랜드별 추이</div>
+        </div>
+        <div class="seg" id="detailChartGroupSeg">
+          <button data-group="brand" class="active">브랜드별</button>
+          <button data-group="channel">채널별</button>
+        </div>
+      </div>
+      <div class="chart-grid" style="margin-bottom:18px;">
+        <div class="card chart-card">
+          <div class="chart-title">셀아웃 추이</div>
+          <div class="chart-sub" id="detailChartSub1">브랜드별 색상 구분</div>
+          <div class="canvas-wrap"><canvas id="detailTrendChartSellout"></canvas></div>
+        </div>
+        <div class="card chart-card">
+          <div class="chart-title">공헌이익 추이</div>
+          <div class="chart-sub" id="detailChartSub2">브랜드별 색상 구분</div>
+          <div class="canvas-wrap"><canvas id="detailTrendChartProfit"></canvas></div>
+        </div>
       </div>
 
       <div class="tb-row" style="margin-bottom:14px;">
@@ -972,8 +994,9 @@ function renderTopTrendChart(){
   let granTxt;
 
   if(state.gran==='week'){
-    labels = WEEK_LABELS;
-    WEEK_LABELS.forEach((_,w)=>{
+    const wStart = Math.min(state.weekStart, state.weekEnd), wEnd = Math.max(state.weekStart, state.weekEnd);
+    labels = WEEK_LABELS.slice(wStart, wEnd+1);
+    for(let w=wStart; w<=wEnd; w++){
       let agg = {sellout:0,sellin:0,adspend:0,contribution:0};
       brands.forEach(b=>channels.forEach(c=>{
         const r = weeklyRecord(b,c,w);
@@ -981,8 +1004,8 @@ function renderTopTrendChart(){
       }));
       selloutArr.push(agg.sellout); sellinArr.push(agg.sellin); adArr.push(agg.adspend);
       profitArr.push(agg.contribution); rateArr.push(agg.sellin? agg.contribution/agg.sellin*100 : 0);
-    });
-    granTxt = `${WEEK_LABELS[0]}~${WEEK_LABELS[WEEK_LABELS.length-1]} (주별)`;
+    }
+    granTxt = `${WEEK_LABELS[wStart]}~${WEEK_LABELS[wEnd]} (주별)`;
   } else if(state.gran==='day'){
     labels = [];
     const s = new Date(state.startDate+'T00:00:00'), e = new Date(state.endDate+'T00:00:00');
@@ -1003,13 +1026,13 @@ function renderTopTrendChart(){
     }
     granTxt = `${state.startDate}~${state.endDate} (일별)`;
   } else {
-    labels = MONTHS;
-    for(let m=0;m<8;m++){
+    labels = MONTHS.slice(state.startMonth, state.endMonth+1);
+    for(let m=state.startMonth;m<=state.endMonth;m++){
       const agg = sumRange(brands, channels, m, m);
       selloutArr.push(agg.sellout); sellinArr.push(agg.sellin); adArr.push(agg.adspend);
       profitArr.push(agg.contribution); rateArr.push(agg.sellin? agg.contribution/agg.sellin*100 : 0);
     }
-    granTxt = '1월~8월 (월별)';
+    granTxt = `${MONTHS_CLEAN[state.startMonth]}~${MONTHS[state.endMonth]} (월별)`;
   }
 
   document.getElementById('topTrendSub').textContent = `셀아웃·셀인·광고비·공헌이익(막대/선, 좌측 축) 및 공헌이익률(선, 우측 축) · 브랜드 ${brands.length}개 · 채널 ${channels.length}개 · ${granTxt}`;
@@ -1239,62 +1262,6 @@ function renderMinusChannels(){
 }
 
 /* ============================= RENDER: TREND CHARTS ============================= */
-function renderTrendCharts(){
-  const brands = activeBrands(), channels = activeChannels();
-  const granLabel = state.gran==='day' ? '일별' : state.gran==='week' ? '주별' : '월별';
-  document.getElementById('trendSub1').textContent = `${granLabel} 매출(셀아웃) 및 순매출(셀인) 금액 추이`;
-  document.getElementById('trendSub2').textContent = `${granLabel} 공헌이익(막대) 및 공헌이익률(선, 공헌이익÷셀인) 추이`;
-  let labels, selloutArr, sellinArr, profitArr, rateArr;
-  if(state.gran==='day'){
-    labels=[]; selloutArr=[]; sellinArr=[]; profitArr=[]; rateArr=[];
-    const s=new Date(state.startDate), e=new Date(state.endDate);
-    for(let m=0;m<8;m++){
-      const dim=daysInMonth2026(m);
-      for(let d=1;d<=dim;d++){
-        const dt=new Date(2026,m,d);
-        if(dt>=s&&dt<=e){
-          let agg={sellout:0,sellin:0,contribution:0};
-          brands.forEach(b=>channels.forEach(c=>{
-            const r=dailyRecord(b,c,m,d,dim);
-            agg.sellout+=r.sellout; agg.sellin+=r.sellin; agg.contribution+=r.contribution;
-          }));
-          labels.push(`${m+1}/${d}`); selloutArr.push(agg.sellout); sellinArr.push(agg.sellin);
-          profitArr.push(agg.contribution); rateArr.push(agg.sellin?agg.contribution/agg.sellin*100:0);
-        }
-      }
-    }
-  } else if(state.gran==='week'){
-    labels=[]; selloutArr=[]; sellinArr=[]; profitArr=[]; rateArr=[];
-    WEEK_LABELS.forEach((wl,wIdx)=>{
-      let agg={sellout:0,sellin:0,contribution:0};
-      brands.forEach(b=>channels.forEach(c=>{
-        const r = weeklyRecord(b,c,wIdx);
-        agg.sellout+=r.sellout; agg.sellin+=r.sellin; agg.contribution+=r.contribution;
-      }));
-      labels.push(wl); selloutArr.push(agg.sellout); sellinArr.push(agg.sellin);
-      profitArr.push(agg.contribution); rateArr.push(agg.sellin?agg.contribution/agg.sellin*100:0);
-    });
-  } else {
-    labels=[]; selloutArr=[]; sellinArr=[]; profitArr=[]; rateArr=[];
-    for(let m=state.startMonth;m<=state.endMonth;m++){
-      const agg = sumRange(brands,channels,m,m);
-      labels.push(MONTHS[m]); selloutArr.push(agg.sellout); sellinArr.push(agg.sellin);
-      profitArr.push(agg.contribution); rateArr.push(agg.sellin?agg.contribution/agg.sellin*100:0);
-    }
-  }
-  upsertChart('trendChart',{type:'line',data:{labels,datasets:[
-    {label:'셀아웃',data:selloutArr,borderColor:'#6a5cf5',backgroundColor:'rgba(106,92,245,.12)',fill:true,tension:.3},
-    {label:'셀인',data:sellinArr,borderColor:'#d9b25c',backgroundColor:'rgba(217,178,92,.12)',fill:true,tension:.3}
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{ticks:{callback:v=>(v/1e6).toFixed(0)+'M'}}}}});
-
-  upsertChart('profitChart',{type:'bar',data:{labels,datasets:[
-    {type:'bar',label:'공헌이익',data:profitArr,backgroundColor:'#8b7ef7',order:2},
-    {type:'line',label:'공헌이익률(%)',data:rateArr,borderColor:'#e0435b',yAxisID:'y1',tension:.3,order:1}
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{
-    y:{ticks:{callback:v=>(v/1e6).toFixed(0)+'M'}},
-    y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>v+'%'}}
-  }}});
-}
 
 /* ============================= RENDER: WoW panel (always fixed WoW; weeks are either explicitly picked or auto-derived) ============================= */
 function endWeekIndexFromState(){
@@ -1844,66 +1811,123 @@ function renderDetailTab(){
   renderDetailChart(brands, channels);
 }
 
+let detailChartGroupBy = 'brand';
+document.querySelectorAll('#detailChartGroupSeg button').forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll('#detailChartGroupSeg button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    detailChartGroupBy = btn.dataset.group;
+    renderDetailChart(activeBrands(), activeChannels());
+  };
+});
+
+let dashboardChartGroupBy = 'brand';
+document.querySelectorAll('#dashboardChartGroupSeg button').forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll('#dashboardChartGroupSeg button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    dashboardChartGroupBy = btn.dataset.group;
+    renderDashboardTrendCharts(activeBrands(), activeChannels());
+  };
+});
+
 function renderDetailChart(brands, channels){
+  renderTrendLineCharts(brands, channels, detailChartGroupBy, {
+    header:'detailChartHeader', sub1:'detailChartSub1', sub2:'detailChartSub2',
+    selloutChart:'detailTrendChartSellout', profitChart:'detailTrendChartProfit'
+  });
+}
+function renderDashboardTrendCharts(brands, channels){
+  renderTrendLineCharts(brands, channels, dashboardChartGroupBy, {
+    header:'dashboardChartHeader', sub1:'dashboardChartSub1', sub2:'dashboardChartSub2',
+    selloutChart:'dashboardTrendChartSellout', profitChart:'dashboardTrendChartProfit'
+  });
+}
+
+function renderTrendLineCharts(brands, channels, groupBy, ids){
   let labels, sortKeys;
   if(state.gran==='month'){
-    labels = MONTHS.slice(); sortKeys = labels.map((_,i)=>i);
+    labels = MONTHS.slice(state.startMonth, state.endMonth+1);
+    sortKeys = []; for(let m=state.startMonth;m<=state.endMonth;m++) sortKeys.push(m);
   } else if(state.gran==='week'){
-    labels = WEEK_LABELS.map((wl,i)=>`${wl} (${WEEK_RANGE_LABELS[i]})`); sortKeys = WEEK_LABELS.map((_,i)=>i);
+    const wStart = Math.min(state.weekStart, state.weekEnd), wEnd = Math.max(state.weekStart, state.weekEnd);
+    labels = WEEK_LABELS.slice(wStart, wEnd+1).map((wl,i)=>`${wl} (${WEEK_RANGE_LABELS[wStart+i]})`);
+    sortKeys = []; for(let w=wStart; w<=wEnd; w++) sortKeys.push(w);
   } else {
-    // 일별: 실제 데이터가 있는 날짜만, 너무 많으면 최근 60일로 제한
+    // 일별: 선택한 조회 시작~종료 날짜 범위 내에서 실제 데이터가 있는 날짜만
+    const s = new Date(state.startDate+'T00:00:00'), e = new Date(state.endDate+'T00:00:00');
     const dateSet = new Set();
-    DAILY_REAL.forEach(row=>{ dateSet.add(row[0]); });
-    let dates = [...dateSet].sort();
-    if(dates.length > 60) dates = dates.slice(-60);
-    labels = dates; sortKeys = dates;
+    DAILY_REAL.forEach(row=>{
+      const dt = new Date(row[0]+'T00:00:00');
+      if(dt>=s && dt<=e) dateSet.add(row[0]);
+    });
+    labels = [...dateSet].sort(); sortKeys = labels;
   }
 
-  const barColors = ['rgba(106,92,245,.55)','rgba(217,178,92,.55)','rgba(42,169,160,.55)'];
   const lineColors = ['#6a5cf5','#d9b25c','#2aa9a0'];
 
-  const datasets = [];
-  brands.forEach((b,bi)=>{
-    const selloutArr = sortKeys.map(k=>{
-      if(state.gran==='month'){
-        let s=0; channels.forEach(c=>s+=monthlyData[b][c][k].sellout); return s;
-      } else if(state.gran==='week'){
-        let s=0; channels.forEach(c=>s+=weeklyRecord(b,c,k).sellout); return s;
-      } else {
-        const channelSet = new Set(channels);
-        let s=0;
-        DAILY_REAL.forEach(row=>{ if(row[0]===k && BRANDS[row[1]]===b && channelSet.has(row[2])) s+=row[3]; });
-        return s;
-      }
-    });
-    const profitArr = sortKeys.map(k=>{
-      if(state.gran==='month'){
-        let s=0; channels.forEach(c=>s+=monthlyData[b][c][k].contribution); return s;
-      } else if(state.gran==='week'){
-        let s=0; channels.forEach(c=>s+=weeklyRecord(b,c,k).contribution); return s;
-      } else {
-        const channelSet = new Set(channels);
-        let s=0;
-        DAILY_REAL.forEach(row=>{ if(row[0]===k && BRANDS[row[1]]===b && channelSet.has(row[2])){ s += row[10]; } });
-        return s;
-      }
-    });
-    const colorIdx = BRANDS.indexOf(b);
-    datasets.push({type:'bar', label:`${b} 셀아웃`, data:selloutArr, backgroundColor: barColors[colorIdx % barColors.length]});
-    datasets.push({type:'line', label:`${b} 공헌이익`, data:profitArr, borderColor: lineColors[colorIdx % lineColors.length], yAxisID:'y1', tension:.3, borderWidth:2});
-  });
+  function selloutFor(brandSet, channelSet, k){
+    if(state.gran==='month'){
+      let s=0; brandSet.forEach(b=>channelSet.forEach(c=>s+=monthlyData[b][c][k].sellout)); return s;
+    } else if(state.gran==='week'){
+      let s=0; brandSet.forEach(b=>channelSet.forEach(c=>s+=weeklyRecord(b,c,k).sellout)); return s;
+    } else {
+      const cSet = new Set(channelSet), bSet = new Set(brandSet);
+      let s=0;
+      DAILY_REAL.forEach(row=>{ if(row[0]===k && bSet.has(BRANDS[row[1]]) && cSet.has(row[2])) s+=row[3]; });
+      return s;
+    }
+  }
+  function profitFor(brandSet, channelSet, k){
+    if(state.gran==='month'){
+      let s=0; brandSet.forEach(b=>channelSet.forEach(c=>s+=monthlyData[b][c][k].contribution)); return s;
+    } else if(state.gran==='week'){
+      let s=0; brandSet.forEach(b=>channelSet.forEach(c=>s+=weeklyRecord(b,c,k).contribution)); return s;
+    } else {
+      const cSet = new Set(channelSet), bSet = new Set(brandSet);
+      let s=0;
+      DAILY_REAL.forEach(row=>{ if(row[0]===k && bSet.has(BRANDS[row[1]]) && cSet.has(row[2])){ s += row[10]; } });
+      return s;
+    }
+  }
 
   const granLabel = state.gran==='month' ? '월별' : state.gran==='week' ? '주차별' : '일별';
-  document.getElementById('detailChartSub').textContent = `셀아웃(막대) · 공헌이익(선) · 브랜드별 색상 구분 · ${granLabel} 기준`;
+  const selloutDatasets = [];
+  const profitDatasets = [];
 
-  upsertChart('detailTrendChart',{type:'bar',data:{labels,datasets},options:{
-    responsive:true, maintainAspectRatio:false,
-    plugins:{legend:{position:'bottom'}},
-    scales:{
-      y:{ticks:{callback:v=>(v/1e6).toFixed(0)+'M'}},
-      y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>(v/1e6).toFixed(0)+'M'}}
+  if(groupBy==='brand'){
+    brands.forEach((b)=>{
+      const color = lineColors[BRANDS.indexOf(b) % lineColors.length];
+      selloutDatasets.push({label:b, data:sortKeys.map(k=>selloutFor([b], channels, k)), borderColor:color, backgroundColor:color, tension:.3, borderWidth:2.5, pointRadius:3});
+      profitDatasets.push({label:b, data:sortKeys.map(k=>profitFor([b], channels, k)), borderColor:color, backgroundColor:color, tension:.3, borderWidth:2.5, pointRadius:3});
+    });
+    document.getElementById(ids.header).textContent = `브랜드별 추이 · ${granLabel} 기준`;
+    document.getElementById(ids.sub1).textContent = '브랜드별 색상 구분';
+    document.getElementById(ids.sub2).textContent = '브랜드별 색상 구분';
+  } else {
+    // 채널별: 선택된 채널이 너무 많으면 셀아웃 상위 8개 + 기타로 묶어서 가독성 확보
+    const channelTotals = channels.map(c=>({c, total: sortKeys.reduce((s,k)=>s+selloutFor(brands,[c],k),0)}));
+    channelTotals.sort((a,b)=>b.total-a.total);
+    const topChannels = channelTotals.slice(0,8).map(t=>t.c).filter(c=>channelTotals.find(t=>t.c===c).total>0);
+    const restChannels = channels.filter(c=>!topChannels.includes(c));
+
+    topChannels.forEach((c,i)=>{
+      const color = PALETTE[i % PALETTE.length];
+      selloutDatasets.push({label:c, data:sortKeys.map(k=>selloutFor(brands, [c], k)), borderColor:color, backgroundColor:color, tension:.3, borderWidth:2, pointRadius:2});
+      profitDatasets.push({label:c, data:sortKeys.map(k=>profitFor(brands, [c], k)), borderColor:color, backgroundColor:color, tension:.3, borderWidth:2, pointRadius:2});
+    });
+    if(restChannels.length){
+      selloutDatasets.push({label:`기타 채널(${restChannels.length})`, data:sortKeys.map(k=>selloutFor(brands, restChannels, k)), borderColor:'#8a8f9c', backgroundColor:'#8a8f9c', borderDash:[4,3], tension:.3, borderWidth:2, pointRadius:2});
+      profitDatasets.push({label:`기타 채널(${restChannels.length})`, data:sortKeys.map(k=>profitFor(brands, restChannels, k)), borderColor:'#8a8f9c', backgroundColor:'#8a8f9c', borderDash:[4,3], tension:.3, borderWidth:2, pointRadius:2});
     }
-  }});
+    document.getElementById(ids.header).textContent = `채널별 추이 · ${granLabel} 기준 (셀아웃 상위 채널 우선)`;
+    document.getElementById(ids.sub1).textContent = '채널별 색상 구분';
+    document.getElementById(ids.sub2).textContent = '채널별 색상 구분';
+  }
+
+  const commonOpts = () => ({responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}, scales:{y:{ticks:{callback:v=>(v/1e6).toFixed(0)+'M'}}}});
+  upsertChart(ids.selloutChart,{type:'line',data:{labels,datasets:selloutDatasets},options:commonOpts()});
+  upsertChart(ids.profitChart,{type:'line',data:{labels,datasets:profitDatasets},options:commonOpts()});
 }
 
 function renderAll(){
@@ -1912,7 +1936,7 @@ function renderAll(){
   const grpLabelMap = {all:'전체 채널', main:'온라인 메인채널', exclude_jasa:'자사몰 제외', only_jasa:'자사몰만'};
   const grpDetailTxt = state.channelGroup==='main' ? ` (${MAIN_ONLINE_CHANNELS.join(', ')})` : '';
   document.getElementById('rangeHint').innerHTML = `* ${CUTOFF_LABEL}까지 집계된 데이터입니다 · 현재 조회 범위: ${rangeTxt} · 채널 그룹: ${grpLabelMap[state.channelGroup]||'사용자 지정'}<span style="color:#c3c7d1;">${grpDetailTxt}</span>`;
-  if(activeTab==='dashboard'){ renderTopTrendChart(); renderGoalHero(); renderKPI(); renderMinusChannels(); renderTrendCharts(); renderWoW(); }
+  if(activeTab==='dashboard'){ renderGoalHero(); renderKPI(); renderMinusChannels(); renderTopTrendChart(); renderDashboardTrendCharts(activeBrands(), activeChannels()); renderWoW(); }
   if(activeTab==='brand'){ renderBrandTab(); }
   if(activeTab==='channel'){ renderChannelTab(); }
   if(activeTab==='pnl'){ renderPnlTab(); }
