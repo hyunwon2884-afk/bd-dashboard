@@ -591,7 +591,8 @@ BRANDS.forEach(b=>{
   CHANNELS.forEach(c=>{
     const arr = (MONTHLY_REAL[b] && MONTHLY_REAL[b][c]) || Array.from({length:8},()=>[0,0,0,0,0,0,0,0]);
     const tgt = BRANDS_WITH_TARGET.has(b) ? ((TARGET_REAL[b] && TARGET_REAL[b][c]) || [0,0,0,0,0,0,0,0]) : [0,0,0,0,0,0,0,0];
-    monthlyData[b][c] = arr.map((a,i)=>({sellout:a[0],fee:a[1],sellin:a[2],cost:a[3],shipping:a[4],adspend:a[5],other:a[6],contribution:a[7],target:tgt[i]||0}));
+    // 스마트스토어는 실제 운영 시트 기준 배송비를 차감해서 계산해야 정확함(원본 raw 파일의 채널별_월정리 요약값과는 다름 - 확인됨)
+    monthlyData[b][c] = arr.map((a,i)=>({sellout:a[0],fee:a[1],sellin:a[2],cost:a[3],shipping:a[4],adspend:a[5],other:a[6],contribution: c==='스마트스토어' ? (a[2]-a[3]-a[4]-a[5]-a[6]) : a[7],target:tgt[i]||0}));
   });
 });
 
@@ -602,7 +603,9 @@ DAILY_REAL.forEach(row=>{
   const [dateStr, bIdx, ch, sellout, fee, sellin, cost, shipping, adspend, other, contribution] = row;
   const b = BRANDS[bIdx];
   if(!b || !DAILY_INDEX[b][ch]) return;
-  DAILY_INDEX[b][ch][dateStr] = {sellout,fee,sellin,cost,shipping,adspend,other,contribution};
+  // 스마트스토어는 배송비 차감 공식으로 재계산 (실제 운영 시트 기준 확인됨)
+  const finalContribution = ch==='스마트스토어' ? (sellin-cost-shipping-adspend-other) : contribution;
+  DAILY_INDEX[b][ch][dateStr] = {sellout,fee,sellin,cost,shipping,adspend,other,contribution:finalContribution};
 });
 function dailyRecord(b,c,m,d,totalDays){
   const mm = String(m+1).padStart(2,'0');
@@ -671,19 +674,19 @@ function weeklyRecord(b,c,wIdx){
     dailyAmounts.push(d===daysInJuly ? (totalAd - perDay*(daysInJuly-1)) : perDay);
   }
 
-  // 1) 일별 데이터 보정 (스마트스토어는 배송비를 차감하지 않는 채널 - 원본 데이터 검증 결과 기준)
+  // 1) 일별 데이터 보정 (스마트스토어는 배송비를 차감하는 채널 - 실제 운영 시트 기준 확인됨)
   for(let d=1; d<=daysInJuly; d++){
     const dateStr = `2026-07-${String(d).padStart(2,'0')}`;
     const existing = DAILY_INDEX[brand][channel][dateStr] || {sellout:0,fee:0,sellin:0,cost:0,shipping:0,adspend:0,other:0,contribution:0};
     existing.adspend = dailyAmounts[d-1];
-    existing.contribution = existing.sellin - existing.cost - existing.adspend - existing.other;
+    existing.contribution = existing.sellin - existing.cost - existing.shipping - existing.adspend - existing.other;
     DAILY_INDEX[brand][channel][dateStr] = existing;
   }
 
   // 2) 월별 데이터 보정
   const monthRec = monthlyData[brand][channel][monthIdx];
   monthRec.adspend = totalAd;
-  monthRec.contribution = monthRec.sellin - monthRec.cost - monthRec.adspend - monthRec.other;
+  monthRec.contribution = monthRec.sellin - monthRec.cost - monthRec.shipping - monthRec.adspend - monthRec.other;
 
   // 3) 주별(WoW): weeklyRecord()가 이제 일별 데이터(DAILY_INDEX)에서 직접 합산하므로,
   //    1)에서 반영한 일별 보정만으로 주차별 집계도 자동으로 함께 반영됩니다.
