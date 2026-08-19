@@ -279,7 +279,7 @@ tr.neg td{color:var(--red);}
         </div>
 
         <div class="field">
-          <label>비교월 (VS) <span style="color:var(--accent);font-weight:700;">NEW</span></label>
+          <label id="vsLabel">비교월 (VS) <span style="color:var(--accent);font-weight:700;">NEW</span></label>
           <select id="vsMonthSel">
             <option value="">비교 안 함</option>
           </select>
@@ -721,7 +721,7 @@ const state = {
   startDate: '2026-07-10', endDate: '2026-08-09',
   weekStart: 6, weekEnd: 7,
   pnlCompStart: null, pnlCompEnd: null,
-  vsMonth: null,
+  vsMonth: null, vsWeek: null,
   brands: new Set(BRANDS),
   channels: new Set(CHANNELS),
   channelGroup: 'all'
@@ -802,11 +802,27 @@ startMonthSel.onchange=()=>{state.startMonth=+startMonthSel.value; if(state.star
 endMonthSel.onchange=()=>{state.endMonth=+endMonthSel.value; if(state.endMonth<state.startMonth){startMonthSel.value=state.endMonth; state.startMonth=state.endMonth;} renderAll();};
 
 const vsMonthSel = document.getElementById('vsMonthSel');
-MONTHS.forEach((m,i)=>{
-  const o=document.createElement('option'); o.value=i; o.textContent=m; vsMonthSel.appendChild(o);
-});
+function syncVsSelectorOptions(){
+  const prevVal = vsMonthSel.value;
+  vsMonthSel.innerHTML = '<option value="">비교 안 함</option>';
+  if(state.gran==='week'){
+    document.getElementById('vsLabel').innerHTML = '비교 주차 (VS) <span style="color:var(--accent);font-weight:700;">NEW</span>';
+    WEEK_LABELS.forEach((wl,i)=>{
+      const o=document.createElement('option'); o.value=i; o.textContent=`${wl} (${WEEK_RANGE_LABELS[i]})`; vsMonthSel.appendChild(o);
+    });
+  } else {
+    document.getElementById('vsLabel').innerHTML = '비교월 (VS) <span style="color:var(--accent);font-weight:700;">NEW</span>';
+    MONTHS.forEach((m,i)=>{
+      const o=document.createElement('option'); o.value=i; o.textContent=m; vsMonthSel.appendChild(o);
+    });
+  }
+  // 보기 기준이 바뀌면 이전 선택(월 인덱스 vs 주 인덱스)은 의미가 달라지므로 비교를 초기화합니다.
+  state.vsMonth = null; state.vsWeek = null; vsMonthSel.value = '';
+}
 vsMonthSel.onchange=()=>{
-  state.vsMonth = vsMonthSel.value===''? null : +vsMonthSel.value;
+  const v = vsMonthSel.value===''? null : +vsMonthSel.value;
+  if(state.gran==='week'){ state.vsWeek = v; state.vsMonth = null; }
+  else { state.vsMonth = v; state.vsWeek = null; }
   renderAll();
 };
 
@@ -859,6 +875,7 @@ function syncGranFieldVisibility(){
   document.getElementById('dayRangeField2').style.display = state.gran==='day'?'flex':'none';
   document.getElementById('weekRangeField').style.display = state.gran==='week'?'flex':'none';
   document.getElementById('weekRangeField2').style.display = state.gran==='week'?'flex':'none';
+  syncVsSelectorOptions();
 }
 
 document.querySelectorAll('#granSeg button').forEach(btn=>{
@@ -1107,26 +1124,32 @@ function renderKPI(){
   const adRate = agg.sellin? agg.adspend/agg.sellin : 0;
   const feeRate = agg.sellin? agg.fee/agg.sellin : 0;
 
-  // 비교월(VS) 선택 시, 현재 조회 범위와 별개로 해당 단일 월과 비교한 증감을 함께 보여줍니다.
-  let vsAgg = null, vsRate = 0;
-  if(state.vsMonth!==null){
+  // 비교월/비교주차(VS) 선택 시, 현재 조회 범위와 별개로 해당 단일 월/주와 비교한 증감을 함께 보여줍니다.
+  let vsAgg = null, vsRate = 0, vsLabelTxt = '';
+  if(state.gran==='week' && state.vsWeek!==null){
+    const brands = activeBrands(), channels = activeChannels();
+    vsAgg = sumWeekRange(brands, channels, state.vsWeek, state.vsWeek);
+    vsRate = vsAgg.sellin? vsAgg.contribution/vsAgg.sellin : 0;
+    vsLabelTxt = WEEK_LABELS[state.vsWeek];
+  } else if(state.gran!=='week' && state.vsMonth!==null){
     const brands = activeBrands(), channels = activeChannels();
     vsAgg = sumRange(brands, channels, state.vsMonth, state.vsMonth);
     vsRate = vsAgg.sellin? vsAgg.contribution/vsAgg.sellin : 0;
+    vsLabelTxt = MONTHS_CLEAN[state.vsMonth];
   }
   function vsLine(cur, base){
     if(vsAgg===null) return '';
     const diffAmt = cur-base;
     const pct = base? diffAmt/Math.abs(base)*100 : (cur===0?0:100);
     const cls = pct>=0?'up':'down';
-    return `<div class="delta ${cls}">${pct>=0?'+':''}${pct.toFixed(1)}% (${diffAmt>=0?'+':''}${fmt(diffAmt)}원) vs ${MONTHS_CLEAN[state.vsMonth]}</div>`;
+    return `<div class="delta ${cls}">${pct>=0?'+':''}${pct.toFixed(1)}% (${diffAmt>=0?'+':''}${fmt(diffAmt)}원) vs ${vsLabelTxt}</div>`;
   }
   function vsLinePP(curPct, basePct, curAmt, baseAmt){
     if(vsAgg===null) return '';
     const diff = (curPct-basePct)*100;
     const cls = diff>=0?'up':'down';
     const amtTxt = (curAmt!==undefined && baseAmt!==undefined) ? ` (${curAmt-baseAmt>=0?'+':''}${fmt(curAmt-baseAmt)}원)` : '';
-    return `<div class="delta ${cls}">${diff>=0?'+':''}${diff.toFixed(1)}p${amtTxt} vs ${MONTHS_CLEAN[state.vsMonth]}</div>`;
+    return `<div class="delta ${cls}">${diff>=0?'+':''}${diff.toFixed(1)}p${amtTxt} vs ${vsLabelTxt}</div>`;
   }
 
   function vsLineCompact(cur, base){
@@ -1134,7 +1157,7 @@ function renderKPI(){
     const diffAmt = cur-base;
     const pct = base? diffAmt/Math.abs(base)*100 : (cur===0?0:100);
     const cls = pct>=0?'up':'down';
-    return `<span class="delta-compact ${cls}">${pct>=0?'+':''}${pct.toFixed(1)}% vs ${MONTHS_CLEAN[state.vsMonth]}</span>`;
+    return `<span class="delta-compact ${cls}">${pct>=0?'+':''}${pct.toFixed(1)}% vs ${vsLabelTxt}</span>`;
   }
 
   const kpiGrid = document.getElementById('kpiGrid');
@@ -1172,7 +1195,7 @@ function renderKPI(){
     : state.gran==='week'
     ? `${WEEK_LABELS[Math.min(state.weekStart,state.weekEnd)]} ~ ${WEEK_LABELS[Math.max(state.weekStart,state.weekEnd)]} (${WEEK_RANGE_LABELS[Math.min(state.weekStart,state.weekEnd)].split('~')[0]}~${WEEK_RANGE_LABELS[Math.max(state.weekStart,state.weekEnd)].split('~')[1]})`
     : `${MONTHS_CLEAN[state.startMonth]} ~ ${MONTHS_CLEAN[state.endMonth]}`;
-  const vsTxt = state.vsMonth!==null ? ` · 비교월: ${MONTHS_CLEAN[state.vsMonth]} 대비 증감 표시 중` : '';
+  const vsTxt = vsAgg!==null ? ` · 비교${state.gran==='week'?'주차':'월'}: ${vsLabelTxt} 대비 증감 표시 중` : '';
   document.getElementById('dashSub').textContent = `${rangeTxt} · 브랜드 ${state.brands.size}개 · 채널 ${state.channels.size}개 기준${vsTxt}`;
 }
 
@@ -1221,19 +1244,7 @@ function renderMinusChannels(){
   const brands = activeBrands(), channels = activeChannels();
   const rows = [];
   channels.forEach(c=>{
-    let agg={sellout:0,sellin:0,adspend:0,contribution:0};
-    brands.forEach(b=>{
-      for(let m=state.gran==='day'?0:state.startMonth; m<=(state.gran==='day'?7:state.endMonth); m++){
-        // for day mode just use month sums approx (kept simple/consistent visual)
-      }
-    });
-    if(state.gran==='day'){
-      const per = sumDayRange(brands,[c],state.startDate,state.endDate);
-      agg = per;
-    } else {
-      const per = sumRange(brands,[c],state.startMonth,state.endMonth);
-      agg = per;
-    }
+    const agg = aggFor(brands,[c]);
     if(agg.contribution<0) rows.push({channel:c, ...agg});
   });
   rows.sort((a,b)=>a.contribution-b.contribution);
@@ -1248,7 +1259,7 @@ function renderMinusChannels(){
     const roas = r.adspend? r.sellout/r.adspend:0;
     const structural = r.channel==='자사몰';
     const brandBreak = brands.map(b=>{
-      const rec = state.gran==='day'? sumDayRange([b],[r.channel],state.startDate,state.endDate) : sumRange([b],[r.channel],state.startMonth,state.endMonth);
+      const rec = aggFor([b],[r.channel]);
       return {brand:b, contribution:rec.contribution, sellout:rec.sellout};
     }).sort((a,b)=>a.contribution-b.contribution);
     return `
@@ -1325,19 +1336,46 @@ function renderWoW(){
     : `${WEEK_LABELS[prevIdx]} (${WEEK_RANGE_LABELS[prevIdx]}) → ${WEEK_LABELS[curIdx]} (${WEEK_RANGE_LABELS[curIdx]}) · 조회 종료 시점 기준 전주 대비 자동 계산 · 특정 주차를 직접 비교하려면 보기 기준을 "주별(WoW)"로 전환하세요`;
 
   const cards = [
-    {label:'셀아웃', val:fmtWon(cur.sellout), d:pct(cur.sellout,prev.sellout)},
-    {label:'셀인', val:fmtWon(cur.sellin), d:pct(cur.sellin,prev.sellin)},
-    {label:'광고비', val:fmtWon(cur.adspend), d:pct(cur.adspend,prev.adspend)},
-    {label:'공헌이익', val:fmtWon(cur.contribution), d:pct(cur.contribution,prev.contribution)},
+    {label:'셀아웃', key:'sellout', val:fmtWon(cur.sellout), d:pct(cur.sellout,prev.sellout)},
+    {label:'셀인', key:'sellin', val:fmtWon(cur.sellin), d:pct(cur.sellin,prev.sellin)},
+    {label:'광고비', key:'adspend', val:fmtWon(cur.adspend), d:pct(cur.adspend,prev.adspend)},
+    {label:'공헌이익', key:'contribution', val:fmtWon(cur.contribution), d:pct(cur.contribution,prev.contribution)},
     {label:'공헌이익률 (셀인)', val:fmtPct(contribRateCur), d:(contribRateCur-contribRatePrev)*100, pp:true},
     {label:'ROAS', val:roasCur.toFixed(0)+'%', d:roasCur-roasPrev, pp:true}
   ];
-  document.getElementById('wowKpiGrid').innerHTML = cards.map(c=>`
-    <div class="card kpi">
+  document.getElementById('wowKpiGrid').innerHTML = cards.map((c,i)=>`
+    <div class="card kpi ${c.key?'clickable':''}" ${c.key?`data-wowmetric="${c.key}"`:''}>
       <div class="label">${c.label}</div>
       <div class="value">${c.val}</div>
       <div class="delta ${c.d>=0?'up':'down'}">${c.d>=0?'+':''}${c.d.toFixed(1)}${c.pp?'p':'%'} ${deltaLabel}</div>
+      ${c.key?`<div class="kpi-expand-note">▾ 채널별 변화 (큰 순)</div><div class="kpi-breakdown" id="wow-bd-${c.key}"></div>`:''}
     </div>`).join('');
+
+  document.querySelectorAll('#wowKpiGrid .kpi.clickable').forEach(card=>{
+    const metric = card.dataset.wowmetric;
+    card.onclick = ()=>{
+      const bd = document.getElementById('wow-bd-'+metric);
+      const isOpening = !bd.classList.contains('open');
+      if(isOpening && !bd.dataset.loaded){
+        const rows = channels.map(c=>{
+          let pv=0, cv=0;
+          brands.forEach(b=>{ pv += weeklyRecord(b,c,prevIdx)[metric]; cv += weeklyRecord(b,c,curIdx)[metric]; });
+          return {c, prev:pv, cur:cv, delta:cv-pv};
+        }).filter(r=>r.prev!==0 || r.cur!==0);
+        rows.sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));
+        bd.innerHTML = rows.length===0 ? `<div style="font-size:11.5px;color:var(--sub);padding:6px 2px;">표시할 채널별 데이터가 없습니다.</div>` : rows.map(r=>{
+          const neg = r.delta<0;
+          return `<div class="bd-row">
+            <span>${r.c}</span>
+            <span class="bd-val" style="${neg?'color:var(--red);':'color:var(--green);'}">${r.delta>=0?'+':''}${fmt(r.delta)}원 <span style="color:#9aa0b0;">(${fmtWon(r.prev)} → ${fmtWon(r.cur)})</span></span>
+          </div>`;
+        }).join('');
+        bd.dataset.loaded = '1';
+      }
+      bd.classList.toggle('open');
+      card.querySelector('.kpi-expand-note').textContent = bd.classList.contains('open') ? '▴ 접기' : '▾ 채널별 변화 (큰 순)';
+    };
+  });
 
   // 8-week trend (aggregate across active brands/channels) - highlight the two compared weeks
   const wLabels = WEEK_LABELS;
