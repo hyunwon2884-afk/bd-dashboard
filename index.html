@@ -190,6 +190,7 @@ tr.neg td{color:var(--red);}
 .goal-mini .goal-bar-track{height:8px;}
 
 .kpi-mini-bar{margin-top:10px;}
+.spark-wrap{height:26px;margin-top:8px;}
 .kpi-mini-bar .track{width:100%;height:6px;background:#eef0f5;border-radius:999px;overflow:hidden;}
 .kpi-mini-bar .fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#8b7ef7,#6a5cf5);}
 .kpi-mini-bar .fill.warn{background:linear-gradient(90deg,#f5c369,#e8912a);}
@@ -943,6 +944,11 @@ WEEK_LABELS.forEach((wl,i)=>{
   const o2=document.createElement('option'); o2.value=i; o2.textContent=`${wl} (${WEEK_RANGE_LABELS[i]})`; weekEndSel.appendChild(o2);
 });
 weekStartSel.value=state.weekStart; weekEndSel.value=state.weekEnd;
+// 안전장치: 혹시라도 두 선택값이 같아지면(캐시/동기화 이슈 등) 자동으로 서로 다른 인접 주차로 보정합니다.
+if(state.weekStart===state.weekEnd){
+  state.weekStart = Math.max(0, state.weekEnd-1);
+  weekStartSel.value = state.weekStart;
+}
 weekStartSel.onchange=()=>{
   state.weekStart=+weekStartSel.value;
   if(state.weekStart>state.weekEnd){ state.weekEnd=state.weekStart; weekEndSel.value=state.weekStart; }
@@ -1391,8 +1397,43 @@ function renderKPI(){
     const diffAmt = cur-base;
     const pct = base? diffAmt/Math.abs(base)*100 : (cur===0?0:100);
     const cls = pct>=0?'up':'down';
-    return `<span class="delta-compact ${cls}">${pct>=0?'+':''}${pct.toFixed(1)}% vs ${vsLabelTxt}</span>`;
+    return `<span class="delta-compact ${cls}">${pct>=0?'+':''}${pct.toFixed(1)}% (${diffAmt>=0?'+':''}${fmt(diffAmt)}원) vs ${vsLabelTxt}</span>`;
   }
+
+  // 미니 스파크라인용: 현재 보기 기준(gran)에 맞춰 최근 N개 기간의 지표 추이를 뽑아옵니다.
+  function periodAggAt(idx){
+    const brands = activeBrands(), channels = activeChannels();
+    if(state.gran==='week') return sumWeekRange(brands, channels, idx, idx);
+    return sumRange(brands, channels, idx, idx);
+  }
+  // 스파크라인은 사용자가 선택한 "조회 시작~조회 종료(또는 비교 주차)" 범위만 그대로 반영합니다.
+  // 범위가 1개뿐이면(예: 8월~8월만 선택) 추세선을 그릴 수 없으므로 자동으로 숨깁니다.
+  function sparkRange(){
+    if(state.gran==='day') return null;
+    const startIdx = state.gran==='week' ? Math.min(state.weekStart,state.weekEnd) : state.startMonth;
+    const endIdx = state.gran==='week' ? Math.max(state.weekStart,state.weekEnd) : state.endMonth;
+    if(endIdx<=startIdx) return null; // 1개 기간만 선택된 경우 추세선 생략
+    const idxs = [];
+    for(let idx=startIdx; idx<=endIdx; idx++) idxs.push(idx);
+    return idxs;
+  }
+  function sparkSeriesFor(field){
+    const idxs = sparkRange();
+    if(!idxs) return null;
+    return idxs.map(idx=>{
+      const a = periodAggAt(idx);
+      if(field==='contribRate') return a.sellin? a.contribution/a.sellin*100 : 0;
+      if(field==='roasSellout') return a.adspend? a.sellout/a.adspend*100 : 0;
+      if(field==='roasSellin') return a.adspend? a.sellin/a.adspend*100 : 0;
+      return a[field];
+    });
+  }
+  function sparkLabelsFor(){
+    const idxs = sparkRange();
+    if(!idxs) return null;
+    return idxs.map(idx=> state.gran==='week' ? `${WEEK_LABELS[idx]} (${WEEK_RANGE_LABELS[idx]})` : MONTHS[idx]);
+  }
+  function sparkHtml(id){ return `<div class="spark-wrap"><canvas id="${id}"></canvas></div>`; }
 
   const kpiGrid = document.getElementById('kpiGrid');
   const targetPct = agg.target>0 ? (agg.sellout/agg.target*100) : null;
@@ -1404,26 +1445,76 @@ function renderKPI(){
     </div>`;
   // 상단 4개: 매출(셀아웃)은 배경으로, 공헌이익은 포인트 컬러로 강조. 나머지 4개 지표(원가·광고비·배송비·ROAS)는 아래 별도 줄로 정리.
   kpiGrid.innerHTML = `
-    <div class="card kpi sellout-hero"><div class="label">셀아웃 (매출)</div><div class="value">${fmtWon(agg.sellout)}</div>${vsAgg?vsLine(agg.sellout,vsAgg.sellout):''}${targetBarHtml}</div>
-    <div class="card kpi clickable" data-metric="sellin"><div class="label">셀인</div><div class="value">${fmtWon(agg.sellin)}</div>${vsAgg?vsLine(agg.sellin,vsAgg.sellin):''}<div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-sellin"></div></div>
-    <div class="card kpi profit-point clickable" data-metric="contribution"><div class="label">공헌이익</div><div class="value ${agg.contribution<0?'neg':''}">${fmtWon(agg.contribution)}</div>${vsAgg?vsLine(agg.contribution,vsAgg.contribution):''}<div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-contribution"></div></div>
-    <div class="card kpi"><div class="label">공헌이익률 <span style="font-weight:400;color:#9aa0b0;">(셀인 기준·P&L)</span></div><div class="value">${fmtPct(contribRate)}</div>${vsAgg?vsLinePP(contribRate,vsRate):''}</div>
+    <div class="card kpi sellout-hero"><div class="label">셀아웃 (매출)</div><div class="value">${fmtWon(agg.sellout)}</div>${vsAgg?vsLine(agg.sellout,vsAgg.sellout):''}${sparkHtml('spark-sellout')}${targetBarHtml}</div>
+    <div class="card kpi clickable" data-metric="sellin"><div class="label">셀인</div><div class="value">${fmtWon(agg.sellin)}</div>${vsAgg?vsLine(agg.sellin,vsAgg.sellin):''}${sparkHtml('spark-sellin')}<div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-sellin"></div></div>
+    <div class="card kpi profit-point clickable" data-metric="contribution"><div class="label">공헌이익</div><div class="value ${agg.contribution<0?'neg':''}">${fmtWon(agg.contribution)}</div>${vsAgg?vsLine(agg.contribution,vsAgg.contribution):''}${sparkHtml('spark-contribution')}<div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-contribution"></div></div>
+    <div class="card kpi"><div class="label">공헌이익률 <span style="font-weight:400;color:#9aa0b0;">(셀인 기준·P&L)</span></div><div class="value">${fmtPct(contribRate)}</div>${vsAgg?vsLinePP(contribRate,vsRate):''}${sparkHtml('spark-contribRate')}</div>
   `;
   const costRow = document.getElementById('costRow');
   const shippingRate = agg.sellin? agg.shipping/agg.sellin : 0;
   costRow.innerHTML = `
-    <div class="cost-item clickable" data-metric="cost"><div class="label">원가</div><div class="value">${fmtWon(agg.cost)}</div><div class="cost-meta"><span class="ratio-badge">S/in ${fmtPct(costRate)}</span>${vsAgg?vsLineCompact(agg.cost,vsAgg.cost):''}</div><div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-cost"></div></div>
-    <div class="cost-item clickable" data-metric="adspend"><div class="label">광고비</div><div class="value">${fmtWon(agg.adspend)}</div><div class="cost-meta"><span class="ratio-badge">S/in ${fmtPct(adRate)}</span>${vsAgg?vsLineCompact(agg.adspend,vsAgg.adspend):''}</div><div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-adspend"></div></div>
-    <div class="cost-item clickable" data-metric="shipping"><div class="label">배송비</div><div class="value">${fmtWon(agg.shipping)}</div><div class="cost-meta"><span class="ratio-badge">S/in ${fmtPct(shippingRate)}</span>${vsAgg?vsLineCompact(agg.shipping,vsAgg.shipping):''}</div><div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-shipping"></div></div>
+    <div class="cost-item clickable" data-metric="cost"><div class="label">원가</div><div class="value">${fmtWon(agg.cost)}</div><div class="cost-meta"><span class="ratio-badge">S/in ${fmtPct(costRate)}</span>${vsAgg?vsLineCompact(agg.cost,vsAgg.cost):''}</div>${sparkHtml('spark-cost')}<div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-cost"></div></div>
+    <div class="cost-item clickable" data-metric="adspend"><div class="label">광고비</div><div class="value">${fmtWon(agg.adspend)}</div><div class="cost-meta"><span class="ratio-badge">S/in ${fmtPct(adRate)}</span>${vsAgg?vsLineCompact(agg.adspend,vsAgg.adspend):''}</div>${sparkHtml('spark-adspend')}<div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-adspend"></div></div>
+    <div class="cost-item clickable" data-metric="shipping"><div class="label">배송비</div><div class="value">${fmtWon(agg.shipping)}</div><div class="cost-meta"><span class="ratio-badge">S/in ${fmtPct(shippingRate)}</span>${vsAgg?vsLineCompact(agg.shipping,vsAgg.shipping):''}</div>${sparkHtml('spark-shipping')}<div class="kpi-expand-note">▾ 채널별 상세 (큰 순)</div><div class="kpi-breakdown" id="bd-shipping"></div></div>
   `;
   document.getElementById('percentRow').innerHTML = `
-    <div class="card kpi roas"><div class="label">ROAS (셀아웃 기준)</div><div class="value">${(roasSellout*100).toFixed(0)}%</div></div>
-    <div class="card kpi roas"><div class="label">ROAS (셀인 기준)</div><div class="value">${(roasSellin*100).toFixed(0)}%</div></div>
+    <div class="card kpi roas"><div class="label">ROAS (셀아웃 기준)</div><div class="value">${(roasSellout*100).toFixed(0)}%</div>${sparkHtml('spark-roasSellout')}</div>
+    <div class="card kpi roas"><div class="label">ROAS (셀인 기준)</div><div class="value">${(roasSellin*100).toFixed(0)}%</div>${sparkHtml('spark-roasSellin')}</div>
     <div class="card kpi ratio-accent"><div class="label">원가율 (원가 ÷ 셀인)</div><div class="value">${fmtPct(costRate)}</div></div>
     <div class="card kpi ratio-accent"><div class="label">광고비율 (광고비 ÷ 셀인)</div><div class="value">${fmtPct(adRate)}</div></div>
     <div class="card kpi ratio-accent"><div class="label">수수료율 (채널수수료 ÷ 셀인)</div><div class="value">${fmtPct(feeRate)}</div><div style="font-size:10px;color:#9aa0b0;margin-top:6px;line-height:1.4;">* 쿠팡(로켓) 등 매입형 채널은 매입단가에 수수료가 선차감(제품별 상이)되어 0%로 표기됩니다.</div></div>
   `;
   wireKpiBreakdownClicks(agg);
+
+  // 미니 스파크라인 렌더링 (KPI 카드 값 옆에 최근 추이를 작게 보여줍니다. 커서를 올리면 어느 기간의 값인지 툴팁으로 표시됩니다)
+  const sparkColor = '#6a5cf5';
+  const sparkPctFields = new Set(['contribRate','roasSellout','roasSellin']);
+  function sparkExternalTooltip(context){
+    let tip = document.getElementById('sparkTooltip');
+    if(!tip){
+      tip = document.createElement('div');
+      tip.id = 'sparkTooltip';
+      tip.style.cssText = 'position:absolute;pointer-events:none;background:#24243a;color:#fff;padding:6px 10px;border-radius:7px;font-size:11px;line-height:1.4;z-index:9999;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.25);opacity:0;transition:opacity .08s;';
+      document.body.appendChild(tip);
+    }
+    const tm = context.tooltip;
+    if(tm.opacity===0){ tip.style.opacity=0; return; }
+    if(tm.body){
+      const title = (tm.title && tm.title[0]) || '';
+      const body = tm.body.map(b=>b.lines).flat().join(' ');
+      tip.innerHTML = `<div style="opacity:.7;">${title}</div><div style="font-weight:700;margin-top:1px;">${body}</div>`;
+    }
+    const rect = context.chart.canvas.getBoundingClientRect();
+    tip.style.opacity = 1;
+    tip.style.left = Math.round(window.scrollX + rect.left + tm.caretX) + 'px';
+    tip.style.top = Math.round(window.scrollY + rect.top - 44) + 'px';
+    tip.style.transform = 'translateX(-50%)';
+  }
+  [
+    ['spark-sellout','sellout'], ['spark-sellin','sellin'], ['spark-contribution','contribution'],
+    ['spark-contribRate','contribRate'], ['spark-cost','cost'], ['spark-adspend','adspend'],
+    ['spark-shipping','shipping'], ['spark-roasSellout','roasSellout'], ['spark-roasSellin','roasSellin']
+  ].forEach(([id,field])=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    const vals = sparkSeriesFor(field);
+    const labels = sparkLabelsFor();
+    if(!vals){ el.closest('.spark-wrap').style.display='none'; return; }
+    const isPct = sparkPctFields.has(field);
+    upsertChart(id, {type:'line', data:{labels, datasets:[{data:vals, borderColor:sparkColor, borderWidth:2, pointRadius:0, pointHoverRadius:4, pointHoverBackgroundColor:sparkColor, tension:.35, fill:true, backgroundColor:sparkColor+'1f'}]},
+      options:{responsive:true, maintainAspectRatio:false, plugins:{
+        legend:{display:false},
+        tooltip:{
+          enabled:false, external:sparkExternalTooltip,
+          callbacks:{
+            title: (items)=> items[0].label,
+            label: (item)=> isPct ? `${item.raw.toFixed(1)}%` : `${fmt(item.raw)}원`
+          }
+        }
+      }, scales:{x:{display:false},y:{display:false}}, interaction:{intersect:false, mode:'index'}}
+    });
+  });
+
   const rangeTxt = state.gran==='day'
     ? `${state.startDate} ~ ${state.endDate}`
     : state.gran==='week'
@@ -1570,20 +1661,27 @@ function renderWoW(){
     : `${WEEK_LABELS[prevIdx]} (${WEEK_RANGE_LABELS[prevIdx]}) → ${WEEK_LABELS[curIdx]} (${WEEK_RANGE_LABELS[curIdx]}) · 조회 종료 시점 기준 전주 대비 자동 계산 · 특정 주차를 직접 비교하려면 보기 기준을 "주별(WoW)"로 전환하세요`;
 
   const cards = [
-    {label:'셀아웃', key:'sellout', val:fmtWon(cur.sellout), d:pct(cur.sellout,prev.sellout)},
-    {label:'셀인', key:'sellin', val:fmtWon(cur.sellin), d:pct(cur.sellin,prev.sellin)},
-    {label:'광고비', key:'adspend', val:fmtWon(cur.adspend), d:pct(cur.adspend,prev.adspend)},
-    {label:'공헌이익', key:'contribution', val:fmtWon(cur.contribution), d:pct(cur.contribution,prev.contribution)},
-    {label:'공헌이익률 (셀인)', val:fmtPct(contribRateCur), d:(contribRateCur-contribRatePrev)*100, pp:true},
-    {label:'ROAS', val:roasCur.toFixed(0)+'%', d:roasCur-roasPrev, pp:true}
+    {label:'셀아웃', key:'sellout', val:fmtWon(cur.sellout), d:pct(cur.sellout,prev.sellout), prevRaw:prev.sellout, curRaw:cur.sellout, isWon:true},
+    {label:'셀인', key:'sellin', val:fmtWon(cur.sellin), d:pct(cur.sellin,prev.sellin), prevRaw:prev.sellin, curRaw:cur.sellin, isWon:true},
+    {label:'광고비', key:'adspend', val:fmtWon(cur.adspend), d:pct(cur.adspend,prev.adspend), prevRaw:prev.adspend, curRaw:cur.adspend, isWon:true},
+    {label:'공헌이익', key:'contribution', val:fmtWon(cur.contribution), d:pct(cur.contribution,prev.contribution), prevRaw:prev.contribution, curRaw:cur.contribution, isWon:true},
+    {label:'공헌이익률 (셀인)', val:fmtPct(contribRateCur), d:(contribRateCur-contribRatePrev)*100, pp:true, prevRaw:contribRatePrev*100, curRaw:contribRateCur*100, isWon:false},
+    {label:'ROAS', val:roasCur.toFixed(0)+'%', d:roasCur-roasPrev, pp:true, prevRaw:roasPrev, curRaw:roasCur, isWon:false}
   ];
-  document.getElementById('wowKpiGrid').innerHTML = cards.map((c,i)=>`
+  document.getElementById('wowKpiGrid').innerHTML = cards.map((c,i)=>{
+    const diffAmt = c.curRaw - c.prevRaw;
+    const detailTxt = c.isWon
+      ? `${fmt(c.prevRaw)}원 → ${fmt(c.curRaw)}원 (${diffAmt>=0?'+':''}${fmt(diffAmt)}원)`
+      : `${c.prevRaw.toFixed(1)}% → ${c.curRaw.toFixed(1)}%`;
+    return `
     <div class="card kpi ${c.key?'clickable':''}" ${c.key?`data-wowmetric="${c.key}"`:''}>
       <div class="label">${c.label}</div>
       <div class="value">${c.val}</div>
       <div class="delta ${c.d>=0?'up':'down'}">${c.d>=0?'+':''}${c.d.toFixed(1)}${c.pp?'p':'%'} ${deltaLabel}</div>
+      <div style="font-size:11px;color:var(--sub);margin-top:3px;">${detailTxt}</div>
       ${c.key?`<div class="kpi-expand-note">▾ 채널별 변화 (큰 순)</div><div class="kpi-breakdown" id="wow-bd-${c.key}"></div>`:''}
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   document.querySelectorAll('#wowKpiGrid .kpi.clickable').forEach(card=>{
     const metric = card.dataset.wowmetric;
