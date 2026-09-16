@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>그라펜 국내온라인팀 · 광고 성과 대시보드</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#14171A; --surface:#1D2124; --surface-2:#252A2D; --border:#33393D;
+  --text:#ECEAE4; --text-dim:#9BA1A6; --text-faint:#6C7378;
+  --accent:#8CB39C; --accent-strong:#B3D3C0;
+  --warn:#E3A857; --bad:#CC6B4E; --good:#8CB39C; --flag:#E14B45;
+  --hair:#8CB39C; --makeup:#E3A857; --skin:#6E93A8; --perfume:#A889B0;
+  --body:#5FA39A; --acc2:#C9B385; --etc:#9AA0A6;
+  --hero1:#CC6B4E; --hero2:#E3A857; --hero3:#8CB39C;
+  --font-head:"Noto Serif KR", serif; --font-body:"IBM Plex Sans KR", sans-serif;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#F5F3EE; --surface:#FFFFFF; --surface-2:#EFECE4;
+    --border:#DBD6CB; --text:#20241F; --text-dim:#5B6259; --text-faint:#8B9089;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#F5F3EE; --surface:#FFFFFF; --surface-2:#EFECE4;
+  --border:#DBD6CB; --text:#20241F; --text-dim:#5B6259; --text-faint:#8B9089;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);-webkit-font-smoothing:antialiased;min-height:100vh;}
+.wrap{max-width:1280px;margin:0 auto;padding:40px 28px 90px;}
+
+header.top{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;
+  border-bottom:1px solid var(--border);padding-bottom:24px;margin-bottom:22px;}
+.eyebrow{font-size:13px;color:var(--accent-strong);letter-spacing:.02em;margin-bottom:8px;font-weight:600;}
+h1{font-family:var(--font-head);font-weight:600;font-size:clamp(24px,3.2vw,34px);margin:0 0 6px;line-height:1.25;}
+.sub{color:var(--text-dim);font-size:14px;line-height:1.6;max-width:580px;}
+.period-box{text-align:right;font-size:13px;color:var(--text-faint);}
+.period-box b{display:block;color:var(--text);font-size:15px;font-weight:600;margin-bottom:2px;}
+
+nav.tabs{display:flex;gap:2px;background:var(--border);border:1px solid var(--border);margin-bottom:36px;overflow-x:auto;}
+nav.tabs button{flex:1;min-width:150px;background:var(--surface);border:none;color:var(--text-dim);
+  font-family:var(--font-body);font-size:13.5px;font-weight:500;padding:14px 12px;cursor:pointer;white-space:nowrap;transition:.15s;}
+nav.tabs button:hover{color:var(--text);}
+nav.tabs button.active{background:var(--accent);color:#12211A;font-weight:700;}
+
+.tabpage{display:none;}
+.tabpage.active{display:block;}
+
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);
+  border:1px solid var(--border);margin-bottom:36px;overflow:hidden;}
+.kpi{background:var(--surface);padding:16px 18px;}
+.kpi .lbl{font-size:12px;color:var(--text-faint);margin-bottom:8px;}
+.kpi .val{font-family:var(--font-head);font-size:22px;font-weight:600;line-height:1.1;}
+.kpi .val small{font-family:var(--font-body);font-size:12.5px;color:var(--text-dim);font-weight:400;margin-left:2px;}
+.kpi.accent .val{color:var(--accent-strong);}
+
+section{margin-bottom:48px;}
+.sec-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+.sec-title{font-family:var(--font-head);font-size:19px;font-weight:600;}
+.sec-desc{font-size:13px;color:var(--text-dim);max-width:660px;margin-top:4px;line-height:1.6;}
+.panel{background:var(--surface);border:1px solid var(--border);padding:22px;}
+.callout{background:var(--surface-2);border:1px solid var(--border);border-left:3px solid var(--accent);
+  padding:12px 16px;font-size:12.6px;color:var(--text-dim);line-height:1.7;margin-bottom:20px;}
+.callout b{color:var(--text);}
+
+/* Hero group cards */
+.hero-group{border:1px solid var(--border);margin-bottom:18px;}
+.hero-group-head{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border);}
+.hero-badge{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.hero-group-title{font-family:var(--font-head);font-size:17px;font-weight:600;}
+.hero-group-body{padding:16px 20px;}
+.hero-note{font-size:12.8px;color:var(--text-dim);line-height:1.7;margin-bottom:2px;}
+.hero-note b{color:var(--text);font-weight:600;}
+table.hero-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:14px;}
+table.hero-table th{text-align:right;color:var(--text-faint);font-weight:500;font-size:11px;padding:8px 10px;border-bottom:1px solid var(--border);}
+table.hero-table th:first-child,table.hero-table td:first-child{text-align:left;}
+table.hero-table td{text-align:right;padding:9px 10px;border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums;}
+table.hero-table tr:last-child td{border-bottom:none;}
+table.hero-table tr.selected td:first-child{color:var(--flag);font-weight:700;}
+table.hero-table tr.selected{background:color-mix(in srgb, var(--flag) 8%, transparent);}
+.mini-tag{display:inline-block;font-size:10px;padding:2px 7px;margin-left:8px;border:1px solid var(--flag);color:var(--flag);vertical-align:middle;font-weight:600;}
+.diag-tag{display:inline-block;font-size:11px;padding:2px 8px;background:var(--surface-2);color:var(--text-dim);}
+
+/* Quadrant (shared) */
+.quad-wrap{display:grid;grid-template-columns:1fr 260px;gap:24px;}
+@media (max-width:860px){.quad-wrap{grid-template-columns:1fr;}}
+.legend{display:flex;flex-wrap:wrap;gap:10px 16px;margin-top:14px;font-size:12.5px;color:var(--text-dim);}
+.legend span{display:inline-flex;align-items:center;gap:6px;}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+.quad-side{display:flex;flex-direction:column;gap:14px;}
+.quad-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
+#quadSearch{background:var(--surface-2);border:1px solid var(--border);color:var(--text);font-family:var(--font-body);
+  font-size:13px;padding:8px 12px;min-width:240px;}
+#quadSearch::placeholder{color:var(--text-faint);}
+.quad-match-info{font-size:12px;color:var(--text-dim);}
+.quad-match-info b{color:var(--accent-strong);}
+.legend-hint{font-size:11.5px;color:var(--text-faint);margin-top:8px;}
+.legend span.legend-item{cursor:pointer;padding:3px 8px;border:1px solid transparent;transition:.15s;user-select:none;}
+.legend span.legend-item:hover{border-color:var(--border);}
+.legend span.legend-item.inactive{opacity:.35;}
+.quad-note{background:var(--surface-2);border:1px solid var(--border);padding:14px 16px;font-size:12.6px;line-height:1.65;color:var(--text-dim);}
+.quad-note b{color:var(--text);display:block;margin-bottom:4px;font-size:13px;}
+#tooltip{position:fixed;pointer-events:none;background:var(--surface-2);border:1px solid var(--border);
+  padding:10px 12px;font-size:12.5px;line-height:1.6;max-width:260px;z-index:50;display:none;box-shadow:0 8px 24px rgba(0,0,0,.35);}
+#tooltip b{display:block;font-size:13px;margin-bottom:4px;}
+#tooltip .flagline{color:var(--flag);font-weight:700;font-size:11.5px;margin-bottom:6px;}
+#tooltip .row{display:flex;justify-content:space-between;gap:14px;color:var(--text-dim);}
+#tooltip .row span:last-child{color:var(--text);font-weight:600;}
+
+/* Ranking */
+.toggle-row{display:flex;gap:6px;flex-wrap:wrap;}
+.toggle-btn{background:var(--surface-2);border:1px solid var(--border);color:var(--text-dim);
+  font-family:var(--font-body);font-size:12.5px;padding:6px 12px;cursor:pointer;transition:.15s;}
+.toggle-btn:hover{color:var(--text);}
+.toggle-btn.active{background:var(--accent);border-color:var(--accent);color:#12211A;font-weight:600;}
+.bar-row{display:grid;grid-template-columns:210px 1fr 96px;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);}
+.bar-row:last-child{border-bottom:none;}
+.bar-name{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text);}
+.bar-name .rank{color:var(--text-faint);margin-right:6px;font-variant-numeric:tabular-nums;}
+.bar-row.selected .bar-name{color:var(--flag);font-weight:700;}
+.bar-track{height:16px;background:var(--surface-2);position:relative;}
+.bar-fill{height:100%;background:var(--accent);transition:width .4s ease;}
+.bar-val{font-size:12.5px;text-align:right;color:var(--text-dim);font-variant-numeric:tabular-nums;}
+
+/* Category / generic tables */
+.cat-table{width:100%;border-collapse:collapse;font-size:13px;}
+.cat-table th{text-align:right;font-weight:500;color:var(--text-faint);font-size:11.5px;padding:8px 10px;border-bottom:1px solid var(--border);}
+.cat-table th:first-child,.cat-table td:first-child{text-align:left;}
+.cat-table td{text-align:right;padding:10px;border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums;}
+.cat-name{display:flex;align-items:center;gap:8px;font-weight:600;}
+
+/* Data table */
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;}
+#search{background:var(--surface-2);border:1px solid var(--border);color:var(--text);font-family:var(--font-body);
+  font-size:13px;padding:8px 12px;min-width:220px;}
+#search::placeholder{color:var(--text-faint);}
+.chip{background:var(--surface-2);border:1px solid var(--border);color:var(--text-dim);font-size:12px;padding:5px 11px;cursor:pointer;}
+.chip.active{background:var(--accent);border-color:var(--accent);color:#12211A;font-weight:600;}
+.chip.flag-chip.active{background:var(--flag);border-color:var(--flag);}
+.table-scroll{overflow-x:auto;}
+table.data{width:100%;border-collapse:collapse;font-size:12.8px;min-width:920px;}
+table.data th{text-align:right;font-weight:500;color:var(--text-faint);font-size:11px;padding:9px 10px;
+  border-bottom:1px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap;}
+table.data th:hover{color:var(--text);}
+table.data th.sorted{color:var(--accent-strong);}
+table.data th:first-child,table.data td:first-child{text-align:left;}
+table.data th:nth-child(2),table.data td:nth-child(2){text-align:left;}
+table.data td{text-align:right;padding:9px 10px;border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums;white-space:nowrap;}
+table.data tbody tr:hover{background:var(--surface-2);}
+table.data tbody tr.selected{border-left:3px solid var(--flag);}
+table.data tbody tr.selected .pname{color:var(--flag);font-weight:700;}
+.pname{max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;}
+.tag{display:inline-block;font-size:10.5px;padding:2px 7px;border:1px solid var(--border);color:var(--text-dim);}
+.roas-good{color:var(--accent-strong);font-weight:600;}
+.roas-bad{color:var(--bad);}
+
+/* Target-item rough calc table */
+table.rough{width:100%;border-collapse:collapse;font-size:13px;}
+table.rough th{text-align:right;color:var(--text-faint);font-weight:500;font-size:11px;padding:8px 10px;border-bottom:1px solid var(--border);}
+table.rough th:first-child,table.rough td:first-child{text-align:left;}
+table.rough td{text-align:right;padding:9px 10px;border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums;vertical-align:middle;}
+table.rough td:first-child{color:var(--flag);font-weight:700;}
+table.rough input{width:64px;background:var(--surface-2);border:1px solid var(--border);color:var(--text);
+  font-family:var(--font-body);font-size:12.5px;padding:5px 6px;text-align:right;}
+.res-up{color:var(--accent-strong);font-weight:600;}
+.res-down{color:var(--bad);font-weight:600;}
+.section-sub{font-size:12px;color:var(--text-faint);margin:22px 0 10px;text-transform:none;}
+
+/* Calculator */
+.calc-grid{display:grid;grid-template-columns:340px 1fr;gap:22px;}
+@media (max-width:900px){.calc-grid{grid-template-columns:1fr;}}
+.calc-form{display:flex;flex-direction:column;gap:14px;}
+.calc-form label{font-size:12px;color:var(--text-dim);display:block;margin-bottom:5px;}
+.calc-form select, .calc-form input[type=number], .calc-form input[type=text]{
+  width:100%;background:var(--surface-2);border:1px solid var(--border);color:var(--text);
+  font-family:var(--font-body);font-size:13.5px;padding:9px 10px;}
+.reco-box{background:var(--surface-2);border:1px solid var(--accent);padding:16px 18px;margin-bottom:18px;}
+.reco-box .reco-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
+.reco-box .reco-title{font-family:var(--font-head);font-size:14.5px;font-weight:600;color:var(--accent-strong);}
+.reco-box .reco-desc{font-size:11.8px;color:var(--text-faint);}
+.reco-grid{display:flex;gap:22px;flex-wrap:wrap;font-size:12.8px;margin-bottom:12px;}
+.reco-grid .item{color:var(--text-dim);}
+.reco-grid .item b{color:var(--text);font-variant-numeric:tabular-nums;}
+.reco-result{display:flex;gap:22px;flex-wrap:wrap;font-size:13px;margin-bottom:12px;}
+.reco-result .item b{display:block;font-family:var(--font-head);font-size:17px;color:var(--accent-strong);}
+.reco-apply{background:var(--accent);border:none;color:#12211A;font-family:var(--font-body);font-weight:600;
+  font-size:12.5px;padding:8px 16px;cursor:pointer;}
+.reco-apply:hover{opacity:.9;}
+.field-row{display:flex;justify-content:space-between;align-items:baseline;}
+.field-row .cur{font-size:11px;color:var(--text-faint);}
+.calc-result{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);}
+.calc-cell{background:var(--surface);padding:16px 18px;}
+.calc-cell .lbl{font-size:11.5px;color:var(--text-faint);margin-bottom:6px;}
+.calc-cell .cur-val{font-size:13px;color:var(--text-dim);}
+.calc-cell .new-val{font-family:var(--font-head);font-size:20px;font-weight:600;margin:2px 0;}
+.calc-cell .delta{font-size:12px;font-weight:600;}
+.calc-cell.goal{background:var(--surface-2);}
+#goalHint{margin-top:14px;font-size:12.6px;color:var(--text-dim);line-height:1.7;padding:12px 14px;background:var(--surface-2);border:1px solid var(--border);display:none;}
+#goalHint b{color:var(--accent-strong);}
+.formula-box{background:var(--surface-2);border:1px solid var(--border);padding:18px 20px;margin-top:20px;font-size:12.6px;line-height:1.9;color:var(--text-dim);}
+.formula-box b{color:var(--text);}
+.formula-box code{background:var(--surface);border:1px solid var(--border);padding:1px 6px;color:var(--accent-strong);font-size:12px;}
+.formula-box ol{margin:8px 0 0;padding-left:18px;}
+
+footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:12px;color:var(--text-faint);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div>
+    <div class="eyebrow">국내온라인팀 · 그라펜 광고 성과</div>
+    <h1>광고 성과 대시보드</h1>
+    <div class="sub">국내온라인팀_RAW 기준. 전체 세그멘테이션, 제품별 상세, 선정 품목 1차 계산, 기대효과 계산을 각각 확인할 수 있습니다.</div>
+  </div>
+  <div class="period-box"><b>2026.08.01 – 2026.08.31</b>출처: 국내온라인팀_RAW</div>
+</header>
+
+<nav class="tabs" id="tabNav">
+  <button data-tab="overview" class="active">전체 성과 3분면</button>
+  <button data-tab="products">제품별 상세</button>
+  <button data-tab="target">선정 품목 계산기</button>
+  <button data-tab="calc">기대효과 계산기</button>
+</nav>
+
+<!-- TAB 1: OVERVIEW -->
+<div class="tabpage active" id="tab-overview">
+  <div class="kpi-row" id="kpiRow"></div>
+  <section>
+    <div class="sec-head">
+      <div>
+        <div class="sec-title">8월 상품 리스트업 — 광고 성과 3분면 세그멘테이션</div>
+        <div class="sec-desc">국내온라인팀에서 실제 운영 중인 공식 세그먼트(HERO 효율개선 · SCALE UP · CORE HERO) 3개 그룹입니다. 빨간색으로 표기된 제품은 이번에 별도 선정한 타깃 품목입니다. 제품 단위 탐색은 '제품별 상세' 탭에서 확인하세요.</div>
+      </div>
+    </div>
+    <div id="heroGroups"></div>
+  </section>
+</div>
+
+<!-- TAB 2: PRODUCTS -->
+<div class="tabpage" id="tab-products">
+  <section>
+    <div class="sec-head">
+      <div>
+        <div class="sec-title">광고 성과 4분면 — CTR × CVR (제품별)</div>
+        <div class="sec-desc">전체 79개 제품을 대상으로 한 탐색용 분포입니다. 가로축 클릭률, 세로축 전환율, 점 크기는 전환매출. 빨간 점은 선정 품목(다운펌 · 해수 포마드 · 볼륨업 컬크림 · 제주해수 스프레이)이며, 마우스를 올리면 상세 정보가 표시됩니다.</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="quad-controls">
+        <input id="quadSearch" type="text" placeholder="제품명 검색 → 해당 제품 강조 표시">
+        <div id="quadMatchInfo" class="quad-match-info"></div>
+      </div>
+      <div class="quad-wrap">
+        <div>
+          <svg id="quadSvg" viewBox="0 0 640 480" style="width:100%;height:auto;display:block;"></svg>
+          <div class="legend" id="catLegend"></div>
+          <div class="legend-hint">카테고리를 클릭하면 해당 카테고리만 켜고 끌 수 있습니다.</div>
+        </div>
+        <div class="quad-side">
+          <div class="quad-note"><b>① 유입 좋음 · 전환 부진</b>CTR 중앙값 이상, CVR 이하. 상세페이지 · 가격 · 혜택 점검이 필요합니다.</div>
+          <div class="quad-note"><b>② 유입 부진 · 전환 좋음</b>CVR 중앙값 이상, CTR 이하. 썸네일 · 상품명 개선으로 유입만 늘리면 매출 성장이 기대됩니다.</div>
+          <div class="quad-note"><b>③ 둘 다 좋음</b>CTR · CVR 모두 중앙값 이상. 예산 확대 테스트 후보입니다.</div>
+          <div class="quad-note"><b>④ 둘 다 부진</b>CTR · CVR 모두 중앙값 이하. 캠페인 구조 재점검이 필요합니다.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div>
+        <div class="sec-title">제품 순위</div>
+        <div class="sec-desc">기준 지표를 바꿔가며 상위 15개 제품을 비교합니다. 빨간 제품명은 선정 품목입니다.</div>
+      </div>
+      <div class="toggle-row" id="rankToggle"></div>
+    </div>
+    <div class="panel" id="rankPanel"></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div><div class="sec-title">카테고리별 요약</div><div class="sec-desc">7개 카테고리의 광고비 · 전환매출 · ROAS를 비교합니다.</div></div></div>
+    <div class="panel"><table class="cat-table" id="catTable"></table></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div><div class="sec-title">전체 제품 데이터 (79개)</div><div class="sec-desc">열 제목을 클릭하면 정렬됩니다. '선정 품목만' 필터로 타깃 4개 제품만 볼 수 있습니다.</div></div></div>
+    <div class="controls">
+      <input id="search" type="text" placeholder="상품명 검색...">
+      <div id="catChips" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+    </div>
+    <div class="panel table-scroll"><table class="data" id="dataTable"></table></div>
+  </section>
+</div>
+
+<!-- TAB 3: TARGET ITEM ROUGH CALC -->
+<div class="tabpage" id="tab-target">
+  <section>
+    <div class="sec-head">
+      <div>
+        <div class="sec-title">선정 품목 1차 계산 — 다운펌 · 해수 포마드 · 볼륨업 컬크림 · 제주해수 스프레이</div>
+        <div class="sec-desc">4개 타깃 품목의 목표 CTR · CVR을 입력하면 예상 전환매출 · ROAS를 즉시 계산합니다. 제품별 · 일자별 상세 추이는 BX디자인팀과의 협업을 통해 추후 별도 데이터로 제공될 예정이며, 이 표는 목표 설정을 위한 러프한 1차 계산용입니다.</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="callout"><b>계산 방식(간이):</b> 광고비 · CPC는 현재값으로 고정하고, 목표 CTR · CVR만 바꿔 예상 성과를 계산합니다. 유입량 = 광고비 ÷ CPC → 전환수 = 유입량 × 목표CVR → 전환매출 = 전환수 × 객단가(현재 전환매출÷현재전환수) → ROAS = 전환매출 ÷ 광고비 × 100. 더 세밀한 조정(CPC 포함)은 '기대효과 계산기' 탭을 이용하세요.</div>
+      <table class="rough" id="targetTable"></table>
+    </div>
+  </section>
+</div>
+
+<!-- TAB 4: CALCULATOR -->
+<div class="tabpage" id="tab-calc">
+  <section>
+    <div class="sec-head">
+      <div>
+        <div class="sec-title">기대효과 계산기 — 썸네일 · 상세페이지 개선</div>
+        <div class="sec-desc">제품을 선택하고 목표 CTR(썸네일 개선) · CPC · CVR(상세페이지 개선)을 조정하면, 동일 광고비 기준 예상 유입 · 전환 · 매출 · ROAS를 계산합니다. 목표 매출액을 직접 입력하면 그 매출을 달성하는 데 필요한 CVR도 함께 안내합니다.</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="calc-grid">
+        <div class="calc-form">
+          <div>
+            <label>제품 선택 · 검색</label>
+            <input type="text" id="calcSearch" placeholder="제품명으로 검색...">
+            <select id="calcProduct" style="margin-top:6px;"></select>
+          </div>
+          <div>
+            <div class="field-row"><label>광고비 (월, 원)</label><span class="cur" id="curCost"></span></div>
+            <input type="number" id="inCost" step="1000">
+          </div>
+          <div>
+            <div class="field-row"><label>목표 CTR (%) — 썸네일 개선</label><span class="cur" id="curCtr"></span></div>
+            <input type="number" id="inCtr" step="0.1">
+          </div>
+          <div>
+            <div class="field-row"><label>목표 CPC (원) — CTR 개선에 따른 입찰 효율</label><span class="cur" id="curCpc"></span></div>
+            <input type="number" id="inCpc" step="1">
+          </div>
+          <div>
+            <div class="field-row"><label>목표 CVR (%) — 상세페이지 개선</label><span class="cur" id="curCvr"></span></div>
+            <input type="number" id="inCvr" step="0.1">
+          </div>
+          <div>
+            <div class="field-row"><label>목표 매출액 (원, 선택 입력)</label><span class="cur">비워두면 미사용</span></div>
+            <input type="number" id="inGoalRevenue" step="10000" placeholder="예: 15000000">
+          </div>
+        </div>
+        <div>
+          <div id="recoBox" class="reco-box"></div>
+          <div class="calc-result" id="calcResult"></div>
+          <div id="goalHint"></div>
+          <div class="formula-box">
+            <b>계산 방식</b>
+            <div style="margin-top:8px;">객단가(AOV) = 현재 전환매출 ÷ 현재 전환수 (제품별 실측값 고정)</div>
+            <ol>
+              <li>예상 유입량(클릭수) = <code>광고비 ÷ 목표 CPC</code></li>
+              <li>예상 노출수 = <code>예상 유입량 ÷ 목표 CTR</code></li>
+              <li>예상 전환수 = <code>예상 유입량 × 목표 CVR</code></li>
+              <li>예상 전환매출 = <code>예상 전환수 × 객단가</code></li>
+              <li>예상 ROAS = <code>예상 전환매출 ÷ 광고비 × 100</code></li>
+            </ol>
+            <div style="margin-top:8px;">목표 매출액을 입력하면 <code>필요 CVR = (목표 매출액 ÷ 객단가) ÷ 예상 유입량 × 100</code> 으로 역산해 함께 보여줍니다.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer>국내온라인팀_RAW · 그라펜 8월 네이버 광고 성과 데이터 기준. ROAS = 전환매출 ÷ 광고비 × 100.</footer>
+</div>
+
+<div id="tooltip"></div>
+
+<script>
+const PRODUCTS = [{"rank": 1, "name": "그라펜 셀프스트레이트/다운펌/옆머리/잔머리관리 100ml, 1개", "category": "헤어", "impressions": 114718, "clicks": 3482, "ctr": 3.0, "cpc": 1181, "cost": 4110748, "conversions": 676, "cvr": 19.4, "cpa": 6081, "revenue": 10106180, "roas": 245.8, "selected": true, "selectedLabel": "다운펌"}, {"rank": 2, "name": "그라펜 세정력좋은 수성포마드왁스 제주해수포마드 100g, 1개", "category": "헤어", "impressions": 58825, "clicks": 1414, "ctr": 2.4, "cpc": 1773, "cost": 2507713, "conversions": 318, "cvr": 22.5, "cpa": 7886, "revenue": 6457760, "roas": 257.5, "selected": true, "selectedLabel": "해수 포마드"}, {"rank": 3, "name": "그라펜 강력고정/가스타입 제주 해수 메가홀드스프레이 250ml, 1개", "category": "헤어", "impressions": 46908, "clicks": 512, "ctr": 1.1, "cpc": 2055, "cost": 1052108, "conversions": 88, "cvr": 17.2, "cpa": 11956, "revenue": 1755200, "roas": 166.8, "selected": false}, {"rank": 4, "name": "그라펜 볼륨업 휘핑토닉 250ml, 1개", "category": "헤어", "impressions": 42649, "clicks": 770, "ctr": 1.8, "cpc": 1167, "cost": 898345, "conversions": 148, "cvr": 19.2, "cpa": 6070, "revenue": 3539200, "roas": 394.0, "selected": false}, {"rank": 5, "name": "그라펜 볼륨 업 헤어 핀처 앞머리 가르마 뿌리 집게", "category": "액세서리", "impressions": 121235, "clicks": 1402, "ctr": 1.2, "cpc": 421, "cost": 589961, "conversions": 4, "cvr": 0.3, "cpa": 147490, "revenue": 80000, "roas": 13.6, "selected": false}, {"rank": 6, "name": "그라펜 팁스케치 리퀴드 커버 파운데이션 20ml 21호 라이트베이지", "category": "메이크업", "impressions": 19562, "clicks": 335, "ctr": 1.7, "cpc": 1738, "cost": 582383, "conversions": 20, "cvr": 6.0, "cpa": 29119, "revenue": 599600, "roas": 103.0, "selected": false}, {"rank": 7, "name": "그라펜 노세범선스틱 오일컷선포켓 SPF50+ 15g, 1개", "category": "스킨케어", "impressions": 22674, "clicks": 222, "ctr": 1.0, "cpc": 2349, "cost": 521519, "conversions": 14, "cvr": 6.3, "cpa": 37251, "revenue": 394500, "roas": 75.6, "selected": false}, {"rank": 8, "name": "그라펜 트리플립™ 프로 남자립밤 4종 택1", "category": "메이크업", "impressions": 14633, "clicks": 283, "ctr": 1.9, "cpc": 1798, "cost": 508899, "conversions": 47, "cvr": 16.6, "cpa": 10828, "revenue": 875600, "roas": 172.1, "selected": false}, {"rank": 9, "name": "그라펜 포어올킬™ 원스텝 코팩 5매입", "category": "스킨케어", "impressions": 39585, "clicks": 317, "ctr": 0.8, "cpc": 1552, "cost": 492134, "conversions": 28, "cvr": 8.8, "cpa": 17576, "revenue": 595900, "roas": 121.1, "selected": false}, {"rank": 10, "name": "그라펜 수성포마드왁스 제주해수포마드 100g, 3개", "category": "헤어", "impressions": 32505, "clicks": 209, "ctr": 0.6, "cpc": 2143, "cost": 447892, "conversions": 21, "cvr": 10.0, "cpa": 21328, "revenue": 659200, "roas": 147.2, "selected": false}, {"rank": 11, "name": "그라펜 볼륨 업 컬크림 150ml, 1개", "category": "헤어", "impressions": 25983, "clicks": 382, "ctr": 1.5, "cpc": 1147, "cost": 438171, "conversions": 54, "cvr": 14.1, "cpa": 8114, "revenue": 1261220, "roas": 287.8, "selected": true, "selectedLabel": "볼륨업 컬크림"}, {"rank": 12, "name": "그라펜 트리플립 프로 컬러립 남자립밤 4.3g", "category": "메이크업", "impressions": 11750, "clicks": 228, "ctr": 1.9, "cpc": 1848, "cost": 421296, "conversions": 17, "cvr": 7.5, "cpa": 24782, "revenue": 396000, "roas": 94.0, "selected": false}, {"rank": 13, "name": "그라펜 타투 퍼퓸 원우드 50ml, 1개", "category": "퍼퓸", "impressions": 13530, "clicks": 184, "ctr": 1.4, "cpc": 2268, "cost": 417359, "conversions": 15, "cvr": 8.2, "cpa": 27824, "revenue": 763900, "roas": 183.0, "selected": false}, {"rank": 14, "name": "그라펜 톤커버시카로션 50ml(SPF50+)", "category": "메이크업", "impressions": 14097, "clicks": 191, "ctr": 1.4, "cpc": 1528, "cost": 291872, "conversions": 18, "cvr": 9.4, "cpa": 16215, "revenue": 573800, "roas": 196.6, "selected": false}, {"rank": 15, "name": "그라펜 EWG그린 세이프 헤어왁스 75g, 1개", "category": "헤어", "impressions": 14097, "clicks": 186, "ctr": 1.3, "cpc": 1279, "cost": 237898, "conversions": 23, "cvr": 12.4, "cpa": 10343, "revenue": 421810, "roas": 177.3, "selected": false}, {"rank": 16, "name": "그라펜 트리플립 프로 핸섬립 남자립밤 4.3g", "category": "메이크업", "impressions": 8587, "clicks": 159, "ctr": 1.9, "cpc": 1414, "cost": 224748, "conversions": 14, "cvr": 8.8, "cpa": 16053, "revenue": 287000, "roas": 127.7, "selected": false}, {"rank": 17, "name": "그라펜 타투 퍼퓸 원우드 29ml, 1개", "category": "퍼퓸", "impressions": 12316, "clicks": 286, "ctr": 2.3, "cpc": 666, "cost": 190502, "conversions": 7, "cvr": 2.4, "cpa": 27215, "revenue": 267000, "roas": 140.2, "selected": false}, {"rank": 18, "name": "그라펜 팁스케치 리퀴드 커버 파운데이션 20ml 23호 샌드", "category": "메이크업", "impressions": 5445, "clicks": 78, "ctr": 1.4, "cpc": 2337, "cost": 182324, "conversions": 10, "cvr": 12.8, "cpa": 18232, "revenue": 284700, "roas": 156.2, "selected": false}, {"rank": 19, "name": "그라펜 볼륨업 휘핑토닉 100ml, 1개", "category": "헤어", "impressions": 12846, "clicks": 339, "ctr": 2.6, "cpc": 532, "cost": 180386, "conversions": 59, "cvr": 17.4, "cpa": 3057, "revenue": 1160450, "roas": 643.3, "selected": false}, {"rank": 20, "name": "그라펜 원스텝 매트 왁스 70g", "category": "헤어", "impressions": 10217, "clicks": 112, "ctr": 1.1, "cpc": 1409, "cost": 157781, "conversions": 19, "cvr": 17.0, "cpa": 8304, "revenue": 393210, "roas": 249.2, "selected": false}, {"rank": 21, "name": "그라펜 의료용실리콘 두피마사지 엣지핑거 레드", "category": "소품", "impressions": 65533, "clicks": 249, "ctr": 0.4, "cpc": 621, "cost": 154539, "conversions": 14, "cvr": 5.6, "cpa": 11039, "revenue": 197300, "roas": 127.7, "selected": false}, {"rank": 22, "name": "그라펜 브로우업 브로우펜슬 0.5g(3종구성)", "category": "메이크업", "impressions": 27613, "clicks": 262, "ctr": 0.9, "cpc": 575, "cost": 150671, "conversions": 27, "cvr": 10.3, "cpa": 5580, "revenue": 347000, "roas": 230.3, "selected": false}, {"rank": 23, "name": "그라펜 타투 퍼퓸 코튼헤이즈 50ml, 1개", "category": "퍼퓸", "impressions": 12149, "clicks": 71, "ctr": 0.6, "cpc": 1480, "cost": 105080, "conversions": 1, "cvr": 1.4, "cpa": 105080, "revenue": 49000, "roas": 46.6, "selected": false}, {"rank": 24, "name": "그라펜 제주 해수 메가홀드스프레이 100ml, 1개", "category": "헤어", "impressions": 10277, "clicks": 177, "ctr": 1.7, "cpc": 584, "cost": 103367, "conversions": 27, "cvr": 15.3, "cpa": 3828, "revenue": 481800, "roas": 466.1, "selected": false}, {"rank": 25, "name": "그라펜 제주해수 볼륨 스프레이 210ml", "category": "헤어", "impressions": 6918, "clicks": 109, "ctr": 1.6, "cpc": 780, "cost": 85057, "conversions": 17, "cvr": 15.6, "cpa": 5003, "revenue": 673500, "roas": 791.8, "selected": false}, {"rank": 26, "name": "멀티 유즈 바디 퍼퓸 스프레이", "category": "바디케어", "impressions": 3933, "clicks": 41, "ctr": 1.0, "cpc": 1795, "cost": 73581, "conversions": 2, "cvr": 4.9, "cpa": 36791, "revenue": 79800, "roas": 108.5, "selected": false}, {"rank": 27, "name": "그라펜 올인원 멀티 유즈 바디 퍼퓸 스프레이 200ml 2종 택1", "category": "바디케어", "impressions": 13573, "clicks": 198, "ctr": 1.5, "cpc": 357, "cost": 70683, "conversions": 22, "cvr": 11.1, "cpa": 3213, "revenue": 696800, "roas": 985.8, "selected": false}, {"rank": 28, "name": "그라펜 모공커버 엣지컷 블랜더 메이크업 퍼프", "category": "소품", "impressions": 9901, "clicks": 94, "ctr": 0.9, "cpc": 515, "cost": 48398, "conversions": 25, "cvr": 26.6, "cpa": 1936, "revenue": 260000, "roas": 537.2, "selected": false}, {"rank": 29, "name": "그라펜 타투 퍼퓸 니스빌 50ml, 1개", "category": "퍼퓸", "impressions": 3946, "clicks": 39, "ctr": 1.0, "cpc": 1232, "cost": 48039, "conversions": 2, "cvr": 5.1, "cpa": 24020, "revenue": 98000, "roas": 204.0, "selected": false}, {"rank": 30, "name": "그라펜 그루밍 클레이 하드 왁스 75ml", "category": "헤어", "impressions": 4409, "clicks": 85, "ctr": 1.9, "cpc": 561, "cost": 47679, "conversions": 11, "cvr": 12.9, "cpa": 4334, "revenue": 245100, "roas": 514.1, "selected": false}, {"rank": 31, "name": "그라펜 매치업 파운데이션 40ml(SPF20)+퍼프", "category": "메이크업", "impressions": 2510, "clicks": 76, "ctr": 3.0, "cpc": 607, "cost": 46163, "conversions": 19, "cvr": 25.0, "cpa": 2430, "revenue": 595900, "roas": 1290.9, "selected": false}, {"rank": 32, "name": "그라펜 타투 퍼퓸 레더 50ml, 1개", "category": "퍼퓸", "impressions": 4920, "clicks": 81, "ctr": 1.6, "cpc": 549, "cost": 44494, "conversions": 3, "cvr": 3.7, "cpa": 14831, "revenue": 110130, "roas": 247.5, "selected": false}, {"rank": 33, "name": "그라펜 포어올킬™ 타이트닝 세럼 30ml", "category": "스킨케어", "impressions": 6333, "clicks": 45, "ctr": 0.7, "cpc": 930, "cost": 41835, "conversions": 3, "cvr": 6.7, "cpa": 13945, "revenue": 88000, "roas": 210.4, "selected": false}, {"rank": 34, "name": "그라펜 타투 퍼퓸 레몬 50ml, 1개", "category": "퍼퓸", "impressions": 7177, "clicks": 76, "ctr": 1.1, "cpc": 541, "cost": 41098, "conversions": 2, "cvr": 2.6, "cpa": 20549, "revenue": 98000, "roas": 238.5, "selected": false}, {"rank": 35, "name": "그라펜 딜라이트 향수 오 드 퍼퓸", "category": "퍼퓸", "impressions": 5092, "clicks": 56, "ctr": 1.1, "cpc": 585, "cost": 32775, "conversions": 0, "cvr": 0.0, "cpa": 0, "revenue": 0, "roas": 0.0, "selected": false}, {"rank": 36, "name": "그라펜 트리플립 프로 립센스 남자립밤 3.9g", "category": "메이크업", "impressions": 3978, "clicks": 59, "ctr": 1.5, "cpc": 522, "cost": 30793, "conversions": 5, "cvr": 8.5, "cpa": 6159, "revenue": 102000, "roas": 331.2, "selected": false}, {"rank": 37, "name": "그라펜 매치업 쉐딩스틱 1.8g", "category": "메이크업", "impressions": 4599, "clicks": 67, "ctr": 1.5, "cpc": 429, "cost": 28744, "conversions": 12, "cvr": 17.9, "cpa": 2395, "revenue": 224000, "roas": 779.3, "selected": false}, {"rank": 38, "name": "그라펜 딥클렌징 리무버 샴푸 500ml", "category": "헤어", "impressions": 3657, "clicks": 63, "ctr": 1.7, "cpc": 455, "cost": 28653, "conversions": 5, "cvr": 7.9, "cpa": 5731, "revenue": 151700, "roas": 529.4, "selected": false}, {"rank": 39, "name": "그라펜 멀티 스타일링 포마드빗", "category": "소품", "impressions": 5294, "clicks": 48, "ctr": 0.9, "cpc": 580, "cost": 27825, "conversions": 2, "cvr": 4.2, "cpa": 13913, "revenue": 37500, "roas": 134.8, "selected": false}, {"rank": 40, "name": "그라펜 제주 해수 스프레이 210ml, 1개", "category": "헤어", "impressions": 2261, "clicks": 45, "ctr": 2.0, "cpc": 596, "cost": 26839, "conversions": 14, "cvr": 31.1, "cpa": 1917, "revenue": 350500, "roas": 1305.9, "selected": true, "selectedLabel": "제주해수 스프레이"}, {"rank": 41, "name": "그라펜 카밍그린 올인원로션 150ml, 1개", "category": "스킨케어", "impressions": 9270, "clicks": 43, "ctr": 0.5, "cpc": 624, "cost": 26835, "conversions": 4, "cvr": 9.3, "cpa": 6709, "revenue": 78360, "roas": 292.0, "selected": false}, {"rank": 42, "name": "그라펜 카밍그린 올인원로션 150ml, 2개", "category": "스킨케어", "impressions": 3520, "clicks": 39, "ctr": 1.1, "cpc": 646, "cost": 25193, "conversions": 13, "cvr": 33.3, "cpa": 1938, "revenue": 350400, "roas": 1390.9, "selected": false}, {"rank": 43, "name": "그라펜 3in1 핸섬 커버 쿠션 14g", "category": "메이크업", "impressions": 1659, "clicks": 37, "ctr": 2.2, "cpc": 633, "cost": 23409, "conversions": 6, "cvr": 16.2, "cpa": 3902, "revenue": 174540, "roas": 745.6, "selected": false}, {"rank": 44, "name": "그라펜 3in1 핸섬 커버 쿠션 리필 14g", "category": "메이크업", "impressions": 1999, "clicks": 46, "ctr": 2.3, "cpc": 506, "cost": 23277, "conversions": 14, "cvr": 30.4, "cpa": 1663, "revenue": 350270, "roas": 1504.8, "selected": false}, {"rank": 45, "name": "그라펜 셀프스트레이트/다운펌 100ml, 2개", "category": "헤어", "impressions": 5527, "clicks": 48, "ctr": 0.9, "cpc": 472, "cost": 22663, "conversions": 11, "cvr": 22.9, "cpa": 2060, "revenue": 308800, "roas": 1362.6, "selected": false}, {"rank": 46, "name": "그라펜 매치업 톤커버 로션 50ml+10ml", "category": "메이크업", "impressions": 2838, "clicks": 79, "ctr": 2.8, "cpc": 238, "cost": 18831, "conversions": 20, "cvr": 25.3, "cpa": 942, "revenue": 540540, "roas": 2870.5, "selected": false}, {"rank": 47, "name": "그라펜 포어올킬™ 딥클렌징 스크러버", "category": "스킨케어", "impressions": 5969, "clicks": 35, "ctr": 0.6, "cpc": 535, "cost": 18738, "conversions": 1, "cvr": 2.9, "cpa": 18738, "revenue": 9000, "roas": 48.0, "selected": false}, {"rank": 48, "name": "그라펜 노세범선스틱 오일컷선포켓 15g, 2개", "category": "스킨케어", "impressions": 6815, "clicks": 44, "ctr": 0.6, "cpc": 406, "cost": 17872, "conversions": 7, "cvr": 15.9, "cpa": 2553, "revenue": 245000, "roas": 1370.9, "selected": false}, {"rank": 49, "name": "그라펜 셀프스트레이트/다운펌 100ml, 3개", "category": "헤어", "impressions": 5124, "clicks": 37, "ctr": 0.7, "cpc": 471, "cost": 17422, "conversions": 14, "cvr": 37.8, "cpa": 1244, "revenue": 410650, "roas": 2357.1, "selected": false}, {"rank": 50, "name": "그라펜 타투 퍼퓸 원우드 핸드크림 50ml", "category": "바디케어", "impressions": 3811, "clicks": 34, "ctr": 0.9, "cpc": 499, "cost": 16959, "conversions": 0, "cvr": 0.0, "cpa": 0, "revenue": 0, "roas": 0.0, "selected": false}, {"rank": 51, "name": "그라펜 EWG그린 세이프 헤어왁스 75g, 3개", "category": "헤어", "impressions": 2431, "clicks": 37, "ctr": 1.5, "cpc": 452, "cost": 16732, "conversions": 11, "cvr": 29.7, "cpa": 1521, "revenue": 360000, "roas": 2151.6, "selected": false}, {"rank": 52, "name": "그라펜 포어올킬™ 코팩 4세트", "category": "스킨케어", "impressions": 9311, "clicks": 28, "ctr": 0.3, "cpc": 583, "cost": 16316, "conversions": 2, "cvr": 7.1, "cpa": 8158, "revenue": 90800, "roas": 556.5, "selected": false}, {"rank": 53, "name": "그라펜 루트부스터SE 샴푸 500ml", "category": "헤어", "impressions": 1127, "clicks": 24, "ctr": 2.1, "cpc": 658, "cost": 15798, "conversions": 1, "cvr": 4.2, "cpa": 15798, "revenue": 39800, "roas": 251.9, "selected": false}, {"rank": 54, "name": "그라펜 타투 퍼퓸 클로버 50ml, 1개", "category": "퍼퓸", "impressions": 2051, "clicks": 30, "ctr": 1.5, "cpc": 517, "cost": 15498, "conversions": 2, "cvr": 6.7, "cpa": 7749, "revenue": 98000, "roas": 632.3, "selected": false}, {"rank": 55, "name": "그라펜 히노키 샴푸 500ml", "category": "헤어", "impressions": 3503, "clicks": 29, "ctr": 0.8, "cpc": 529, "cost": 15328, "conversions": 3, "cvr": 10.3, "cpa": 5109, "revenue": 81500, "roas": 531.7, "selected": false}, {"rank": 56, "name": "그라펜 선포켓오일컷+팁스케치 2종 세트", "category": "스킨케어", "impressions": 3816, "clicks": 35, "ctr": 0.9, "cpc": 424, "cost": 14831, "conversions": 5, "cvr": 14.3, "cpa": 2966, "revenue": 169800, "roas": 1144.9, "selected": false}, {"rank": 57, "name": "그라펜 팁스케치+쉐딩스틱 메이크업 2종세트", "category": "메이크업", "impressions": 1961, "clicks": 25, "ctr": 1.3, "cpc": 567, "cost": 14166, "conversions": 1, "cvr": 4.0, "cpa": 14166, "revenue": 28000, "roas": 197.7, "selected": false}, {"rank": 58, "name": "그라펜 제주 해수 메가홀드스프레이 350ml, 1개", "category": "헤어", "impressions": 3080, "clicks": 25, "ctr": 0.8, "cpc": 551, "cost": 13768, "conversions": 2, "cvr": 8.0, "cpa": 6884, "revenue": 45000, "roas": 326.8, "selected": false}, {"rank": 59, "name": "그라펜 포어올킬™ 미스트 토너 120ml", "category": "스킨케어", "impressions": 2567, "clicks": 38, "ctr": 1.5, "cpc": 341, "cost": 12968, "conversions": 7, "cvr": 18.4, "cpa": 1853, "revenue": 170600, "roas": 1315.5, "selected": false}, {"rank": 60, "name": "그라펜 노세범선스틱 오일컷선포켓 15g, 3개", "category": "스킨케어", "impressions": 3871, "clicks": 37, "ctr": 1.0, "cpc": 333, "cost": 12323, "conversions": 5, "cvr": 13.5, "cpa": 2465, "revenue": 375000, "roas": 3043.1, "selected": false}, {"rank": 61, "name": "그라펜 그루밍 버블 토닉 150ml", "category": "헤어", "impressions": 1493, "clicks": 29, "ctr": 1.9, "cpc": 423, "cost": 12269, "conversions": 1, "cvr": 3.4, "cpa": 12269, "revenue": 15200, "roas": 123.9, "selected": false}, {"rank": 62, "name": "그라펜 볼륨업 휘핑토닉 100ml, 2개", "category": "헤어", "impressions": 2633, "clicks": 24, "ctr": 0.9, "cpc": 448, "cost": 10743, "conversions": 4, "cvr": 16.7, "cpa": 2686, "revenue": 82050, "roas": 763.8, "selected": false}, {"rank": 63, "name": "그라펜 트리플립 프로 네이키드 남자립밤 3.9g", "category": "메이크업", "impressions": 1620, "clicks": 17, "ctr": 1.0, "cpc": 606, "cost": 10297, "conversions": 2, "cvr": 11.8, "cpa": 5149, "revenue": 34200, "roas": 332.1, "selected": false}, {"rank": 64, "name": "그라펜 핸섬타투브로우 0.8g", "category": "메이크업", "impressions": 4487, "clicks": 31, "ctr": 0.7, "cpc": 324, "cost": 10031, "conversions": 0, "cvr": 0.0, "cpa": 0, "revenue": 0, "roas": 0.0, "selected": false}, {"rank": 65, "name": "그라펜 매치업 커버스틱 파운데이션 12g", "category": "메이크업", "impressions": 525, "clicks": 8, "ctr": 1.5, "cpc": 1076, "cost": 8611, "conversions": 2, "cvr": 25.0, "cpa": 4306, "revenue": 37900, "roas": 440.1, "selected": false}, {"rank": 66, "name": "그라펜 셀프스트레이트/다운펌 100ml, 4개", "category": "헤어", "impressions": 3415, "clicks": 20, "ctr": 0.6, "cpc": 425, "cost": 8509, "conversions": 3, "cvr": 15.0, "cpa": 2836, "revenue": 35800, "roas": 420.7, "selected": false}, {"rank": 67, "name": "그라펜 콜라겐볼륨앰플 100ml", "category": "헤어", "impressions": 1750, "clicks": 29, "ctr": 1.7, "cpc": 292, "cost": 8462, "conversions": 0, "cvr": 0.0, "cpa": 0, "revenue": 0, "roas": 0.0, "selected": false}, {"rank": 68, "name": "그라펜 볼륨업 휘핑토닉 250+100, 1개", "category": "헤어", "impressions": 2129, "clicks": 24, "ctr": 1.1, "cpc": 347, "cost": 8331, "conversions": 0, "cvr": 0.0, "cpa": 0, "revenue": 0, "roas": 0.0, "selected": false}, {"rank": 69, "name": "그라펜 볼륨업 휘핑토닉 250ml, 2개(컬크림 증정)", "category": "헤어", "impressions": 2419, "clicks": 17, "ctr": 0.7, "cpc": 448, "cost": 7623, "conversions": 1, "cvr": 5.9, "cpa": 7623, "revenue": 42500, "roas": 557.5, "selected": false}, {"rank": 70, "name": "그라펜 대용량 왁스 100ml", "category": "헤어", "impressions": 1341, "clicks": 13, "ctr": 1.0, "cpc": 547, "cost": 7107, "conversions": 2, "cvr": 15.4, "cpa": 3554, "revenue": 102000, "roas": 1435.2, "selected": false}, {"rank": 71, "name": "그라펜 헤어 스타일링 3종 풀세트", "category": "헤어", "impressions": 560, "clicks": 4, "ctr": 0.7, "cpc": 1704, "cost": 6814, "conversions": 0, "cvr": 0.0, "cpa": 0, "revenue": 0, "roas": 0.0, "selected": false}, {"rank": 72, "name": "그라펜 루트부스터토닉 160ml", "category": "헤어", "impressions": 1810, "clicks": 17, "ctr": 0.9, "cpc": 399, "cost": 6780, "conversions": 1, "cvr": 5.9, "cpa": 6780, "revenue": 37800, "roas": 557.5, "selected": false}, {"rank": 73, "name": "그라펜 볼륨 업 컬크림 150ml, 2개", "category": "헤어", "impressions": 1435, "clicks": 11, "ctr": 0.8, "cpc": 411, "cost": 4517, "conversions": 1, "cvr": 9.1, "cpa": 4517, "revenue": 18000, "roas": 398.5, "selected": false}, {"rank": 74, "name": "그라펜 리무버 샴푸 500ml+브러쉬 세트", "category": "헤어", "impressions": 1393, "clicks": 13, "ctr": 0.9, "cpc": 339, "cost": 4406, "conversions": 0, "cvr": 0.0, "cpa": 0, "revenue": 0, "roas": 0.0, "selected": false}, {"rank": 75, "name": "그라펜 제주 해수 스프레이 210ml, 2개", "category": "헤어", "impressions": 885, "clicks": 14, "ctr": 1.6, "cpc": 171, "cost": 2399, "conversions": 4, "cvr": 28.6, "cpa": 600, "revenue": 138500, "roas": 5773.2, "selected": false}, {"rank": 76, "name": "그라펜 시카 케어 트리트먼트 300ml", "category": "헤어", "impressions": 734, "clicks": 6, "ctr": 0.8, "cpc": 373, "cost": 2239, "conversions": 3, "cvr": 50.0, "cpa": 746, "revenue": 47000, "roas": 2099.2, "selected": false}, {"rank": 77, "name": "그라펜 트리플립 핸섬립 립밤 4.3g, 2개", "category": "메이크업", "impressions": 472, "clicks": 6, "ctr": 1.3, "cpc": 370, "cost": 2222, "conversions": 0, "cvr": 0.0, "cpa": 0, "revenue": 0, "roas": 0.0, "selected": false}, {"rank": 78, "name": "그라펜 컨트롤 페이스트 왁스+해수스프레이 2종 세트", "category": "헤어", "impressions": 936, "clicks": 6, "ctr": 0.6, "cpc": 363, "cost": 2176, "conversions": 0, "cvr": 0.0, "cpa": 0, "revenue": 0, "roas": 0.0, "selected": false}, {"rank": 79, "name": "그라펜 팁스케치+트리플립 메이크업 2종세트", "category": "메이크업", "impressions": 575, "clicks": 4, "ctr": 0.7, "cpc": 497, "cost": 1988, "conversions": 1, "cvr": 25.0, "cpa": 1988, "revenue": 44500, "roas": 2238.4, "selected": false}];
+const HERO_GROUPS = {"heroEff": {"title": "① HERO 효율 개선", "criterion": "선정 기준: 매출액 규모 상위 제품 중 CTR·CVR 진단상 개선 여지가 있는 제품", "action": "조치: 썸네일 · 상품명 · 상세페이지 교체 → '선정 품목 계산기' / '기대효과 계산기' 탭에서 개선 후 예상 성과 시뮬레이션", "items": [{"name": "팁스케치 21호", "cost": 582383, "revenue": 599600, "roas": 103.0, "ctr": 1.7, "cpc": 1738, "cvr": 6.0, "cpa": 29119, "diag": "CTR / CVR 개선"}, {"name": "트리플립 PRO", "cost": 508899, "revenue": 875600, "roas": 172.1, "ctr": 1.9, "cpc": 1798, "cvr": 16.6, "cpa": 10828, "diag": "광고 효율 개선"}, {"name": "원스텝 코팩", "cost": 492134, "revenue": 595900, "roas": 121.1, "ctr": 0.8, "cpc": 1552, "cvr": 8.8, "cpa": 17576, "diag": "CTR 개선"}]}, "scaleUp": {"title": "② SCALE UP", "criterion": "선정 기준: ROAS · CVR은 높으나 광고비 규모가 작아 확대 여력이 있는 제품", "action": "조치: 예산 확대는 마케팅 판단만으로 진행하지 않고, MD팀과 재고 · 물량 · 프로모션 일정을 함께 협의해 결정", "items": [{"name": "볼륨업 휘핑토닉 250ml", "cost": 898345, "revenue": 3539200, "roas": 394.0, "ctr": 1.8, "cpc": 1167, "cvr": 19.2, "cpa": 6070, "diag": "예산 확대 테스트"}, {"name": "볼륨업 컬크림 150ml", "cost": 438171, "revenue": 1261220, "roas": 287.8, "ctr": 1.5, "cpc": 1147, "cvr": 14.1, "cpa": 8114, "diag": "예산 확대 테스트", "tag": "선정 품목"}, {"name": "제주 해수 볼륨 스프레이 210ml", "cost": 85057, "revenue": 673500, "roas": 791.8, "ctr": 1.6, "cpc": 780, "cvr": 15.6, "cpa": 5003, "diag": "예산 확대 테스트"}, {"name": "제주 해수 스프레이 210ml", "cost": 26839, "revenue": 350500, "roas": 1305.9, "ctr": 2.0, "cpc": 596, "cvr": 31.1, "cpa": 1917, "diag": "소액 확대 테스트", "tag": "선정 품목"}]}, "coreHero": {"title": "③ CORE HERO", "criterion": "선정 기준: 광고비 · 매출 규모가 가장 크고 성과가 안정적인 주력 운영 제품", "action": "조치: 현재 운영 방식 유지, 예산 급변 없이 안정적으로 집행", "items": [{"name": "제주해수 포마드 100g", "cost": 2507713, "revenue": 6457760, "roas": 257.5, "ctr": 2.4, "cpc": 1773, "cvr": 22.5, "cpa": 7886, "diag": "주력 운영", "tag": "선정 품목"}, {"name": "셀프스트레이트/다운펌 100ml", "cost": 4110748, "revenue": 10106180, "roas": 245.8, "ctr": 3.0, "cpc": 1181, "cvr": 19.4, "cpa": 6081, "diag": "네이버 전용 · 주력 운영", "tag": "네이버 전용 · 선정 품목"}]}};
+
+const CAT_COLOR = {
+  "헤어":"var(--hair)","메이크업":"var(--makeup)","스킨케어":"var(--skin)",
+  "퍼퓸":"var(--perfume)","바디케어":"var(--body)","소품":"var(--acc2)","액세서리":"var(--etc)"
+};
+const root = getComputedStyle(document.documentElement);
+function cssVar(varRef){ const m = varRef.match(/--([a-zA-Z0-9]+)/); return root.getPropertyValue('--'+m[1]).trim() || '#888'; }
+function colorOf(cat){ return cssVar(CAT_COLOR[cat] || "var(--etc)"); }
+function fmt(n){ return Math.round(n).toLocaleString('ko-KR'); }
+function fmtPct(n){ return n.toFixed(1)+'%'; }
+
+// ---------- TAB NAV ----------
+document.querySelectorAll('#tabNav button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#tabNav button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tabpage').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ---------- KPI (overview) ----------
+const totalImpr = PRODUCTS.reduce((s,p)=>s+p.impressions,0);
+const totalClicks = PRODUCTS.reduce((s,p)=>s+p.clicks,0);
+const totalCost = PRODUCTS.reduce((s,p)=>s+p.cost,0);
+const totalConv = PRODUCTS.reduce((s,p)=>s+p.conversions,0);
+const totalRevenue = PRODUCTS.reduce((s,p)=>s+p.revenue,0);
+const kpis = [
+  {lbl:"노출수", val: fmt(totalImpr)},
+  {lbl:"클릭수", val: fmt(totalClicks)},
+  {lbl:"CTR", val: fmtPct(totalClicks/totalImpr*100)},
+  {lbl:"광고비", val: fmt(totalCost), unit:"원"},
+  {lbl:"CVR", val: fmtPct(totalConv/totalClicks*100)},
+  {lbl:"CPA", val: fmt(totalCost/totalConv), unit:"원"},
+  {lbl:"전환매출", val: fmt(totalRevenue), unit:"원", accent:true},
+  {lbl:"ROAS", val: fmtPct(totalRevenue/totalCost*100), accent:true},
+];
+document.getElementById('kpiRow').innerHTML = kpis.map(k=>`
+  <div class="kpi ${k.accent?'accent':''}"><div class="lbl">${k.lbl}</div><div class="val">${k.val}${k.unit?`<small>${k.unit}</small>`:''}</div></div>
+`).join('');
+
+// ---------- Hero groups (overview) ----------
+const heroColor = {heroEff:'var(--hero1)', scaleUp:'var(--hero2)', coreHero:'var(--hero3)'};
+document.getElementById('heroGroups').innerHTML = Object.entries(HERO_GROUPS).map(([key,g])=>`
+  <div class="hero-group">
+    <div class="hero-group-head">
+      <span class="hero-badge" style="background:${cssVar(heroColor[key])}"></span>
+      <span class="hero-group-title">${g.title}</span>
+    </div>
+    <div class="hero-group-body">
+      <div class="hero-note">${g.criterion}</div>
+      <div class="hero-note"><b>${g.action}</b></div>
+      <table class="hero-table">
+        <thead><tr><th>제품명</th><th>광고비</th><th>전환매출</th><th>ROAS</th><th>CTR</th><th>CPC</th><th>CVR</th><th>CPA</th><th>진단</th></tr></thead>
+        <tbody>
+          ${g.items.map(it=>`
+            <tr class="${it.tag?'selected':''}" ${it.tag?`title="선정 품목: ${it.tag}"`:''}>
+              <td>${it.name}${it.tag?`<span class="mini-tag">${it.tag}</span>`:''}</td>
+              <td>${fmt(it.cost)}</td>
+              <td>${fmt(it.revenue)}</td>
+              <td>${it.roas.toFixed(1)}%</td>
+              <td>${it.ctr.toFixed(2)}%</td>
+              <td>${fmt(it.cpc)}</td>
+              <td>${it.cvr.toFixed(2)}%</td>
+              <td>${fmt(it.cpa)}</td>
+              <td><span class="diag-tag">${it.diag}</span></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>
+`).join('');
+
+// ---------- Quadrant (products tab) ----------
+function median(arr){ const s=[...arr].sort((a,b)=>a-b); const mid=Math.floor(s.length/2); return s.length%2? s[mid] : (s[mid-1]+s[mid])/2; }
+const medCtr = median(PRODUCTS.map(p=>p.ctr));
+const medCvr = median(PRODUCTS.map(p=>p.cvr));
+const svgNS = "http://www.w3.org/2000/svg";
+const svg = document.getElementById('quadSvg');
+const PAD = {l:54,r:20,t:20,b:44};
+const W=640,H=480, plotW=W-PAD.l-PAD.r, plotH=H-PAD.t-PAD.b;
+const maxCtr = Math.max(...PRODUCTS.map(p=>p.ctr))*1.08;
+const maxCvr = Math.max(...PRODUCTS.map(p=>p.cvr))*1.08;
+const maxRev = Math.max(...PRODUCTS.map(p=>p.revenue));
+function xOf(ctr){ return PAD.l + (ctr/maxCtr)*plotW; }
+function yOf(cvr){ return PAD.t + plotH - (cvr/maxCvr)*plotH; }
+function rOf(rev){ return 3.5 + Math.sqrt(Math.max(rev,0)/maxRev)*22; }
+function svgEl(tag, attrs){ const el = document.createElementNS(svgNS, tag); for(const k in attrs) el.setAttribute(k, attrs[k]); return el; }
+
+svg.appendChild(svgEl('line',{x1:PAD.l,y1:PAD.t,x2:PAD.l,y2:PAD.t+plotH,stroke:cssVar('var(--border)'),'stroke-width':1}));
+svg.appendChild(svgEl('line',{x1:PAD.l,y1:PAD.t+plotH,x2:PAD.l+plotW,y2:PAD.t+plotH,stroke:cssVar('var(--border)'),'stroke-width':1}));
+const gx = xOf(medCtr), gy = yOf(medCvr);
+[[gx,PAD.t,gx,PAD.t+plotH],[PAD.l,gy,PAD.l+plotW,gy]].forEach(([x1,y1,x2,y2])=>{
+  svg.appendChild(svgEl('line',{x1,y1,x2,y2,stroke:cssVar('var(--border)'),'stroke-width':1,'stroke-dasharray':'4 4'}));
+});
+function textEl(x,y,str,attrs={}){
+  const t = svgEl('text',Object.assign({x,y,fill:cssVar('var(--text-faint)'),'font-size':'11','font-family':'IBM Plex Sans KR, sans-serif'},attrs));
+  t.textContent = str; return t;
+}
+svg.appendChild(textEl(PAD.l+plotW, PAD.t+plotH+30, 'CTR (클릭률) →', {'text-anchor':'end'}));
+const yLab = svgEl('text',{x:0,y:0,fill:cssVar('var(--text-faint)'),'font-size':'11','font-family':'IBM Plex Sans KR, sans-serif','text-anchor':'start'});
+yLab.textContent='CVR (전환율)';
+yLab.setAttribute('transform',`translate(16,${PAD.t+plotH/2+30}) rotate(-90)`);
+svg.appendChild(yLab);
+[0,maxCtr].forEach(v=>svg.appendChild(textEl(xOf(v), PAD.t+plotH+16, v.toFixed(1)+'%', {'text-anchor':'middle'})));
+svg.appendChild(textEl(xOf(medCtr), PAD.t+plotH+16, '중앙값 '+medCtr.toFixed(1)+'%', {'text-anchor':'middle',fill:cssVar('var(--accent-strong)')}));
+[0,maxCvr].forEach(v=>svg.appendChild(textEl(PAD.l-8, yOf(v)+4, v.toFixed(0)+'%', {'text-anchor':'end'})));
+svg.appendChild(textEl(PAD.l-8, yOf(medCvr)+4, medCvr.toFixed(0)+'%', {'text-anchor':'end',fill:cssVar('var(--accent-strong)')}));
+[{x:PAD.l+plotW-8,y:PAD.t+16,txt:'③ 둘 다 좋음','anchor':'end'},
+ {x:PAD.l+8,y:PAD.t+16,txt:'② 유입부진·전환좋음','anchor':'start'},
+ {x:PAD.l+plotW-8,y:PAD.t+plotH-8,txt:'① 유입좋음·전환부진','anchor':'end'},
+ {x:PAD.l+8,y:PAD.t+plotH-8,txt:'④ 둘 다 부진','anchor':'start'}].forEach(q=>{
+  svg.appendChild(textEl(q.x,q.y,q.txt,{'text-anchor':q.anchor,'font-size':'10.5',fill:cssVar('var(--text-faint)')}));
+});
+const tooltip = document.getElementById('tooltip');
+// draw unselected first, then selected on top
+const drawOrder = [...PRODUCTS].sort((a,b)=>(a.selected===b.selected)?0:(a.selected?1:-1));
+const circleMap = [];
+drawOrder.forEach(p=>{
+  const flagged = p.selected;
+  const col = flagged ? cssVar('var(--flag)') : colorOf(p.category);
+  const c = svgEl('circle',{cx:xOf(p.ctr), cy:yOf(p.cvr), r:rOf(p.revenue)+(flagged?1.5:0), fill:col,
+    'fill-opacity':flagged?0.85:0.65, stroke:col, 'stroke-width':flagged?2.5:1});
+  c.style.cursor='pointer';
+  c.dataset.baseR = rOf(p.revenue)+(flagged?1.5:0);
+  c.dataset.baseCol = col;
+  c.addEventListener('mousemove', (e)=>{
+    tooltip.style.display='block';
+    tooltip.style.left = (e.clientX+14)+'px'; tooltip.style.top = (e.clientY+14)+'px';
+    tooltip.innerHTML = `${flagged?`<div class="flagline">★ 선정 품목 — ${p.selectedLabel}</div>`:''}<b>${p.name}</b>
+      <div class="row"><span>카테고리</span><span>${p.category}</span></div>
+      <div class="row"><span>CTR</span><span>${p.ctr.toFixed(2)}%</span></div>
+      <div class="row"><span>CVR</span><span>${p.cvr.toFixed(2)}%</span></div>
+      <div class="row"><span>광고비</span><span>${fmt(p.cost)}원</span></div>
+      <div class="row"><span>전환매출</span><span>${fmt(p.revenue)}원</span></div>
+      <div class="row"><span>ROAS</span><span>${p.roas.toFixed(0)}%</span></div>`;
+  });
+  c.addEventListener('mouseleave', ()=>{ tooltip.style.display='none'; });
+  svg.appendChild(c);
+  circleMap.push({el:c, p});
+});
+const cats = [...new Set(PRODUCTS.map(p=>p.category))];
+const hiddenCats = new Set();
+let quadQuery = '';
+
+function renderLegend(){
+  document.getElementById('catLegend').innerHTML = cats.map(c=>
+    `<span class="legend-item ${hiddenCats.has(c)?'inactive':''}" data-cat="${c}"><span class="dot" style="background:${colorOf(c)}"></span>${c}</span>`
+  ).join('') + `<span><span class="dot" style="background:${cssVar('var(--flag)')}"></span>선정 품목</span>`;
+  document.querySelectorAll('#catLegend .legend-item').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const cat = el.dataset.cat;
+      if(hiddenCats.has(cat)) hiddenCats.delete(cat); else hiddenCats.add(cat);
+      renderLegend();
+      updateDots();
+    });
+  });
+}
+renderLegend();
+
+function updateDots(){
+  let matchCount = 0;
+  circleMap.forEach(({el,p})=>{
+    const catHidden = hiddenCats.has(p.category);
+    const matchesSearch = quadQuery ? p.name.toLowerCase().includes(quadQuery) : null;
+    if(matchesSearch) matchCount++;
+    if(catHidden){
+      el.setAttribute('fill-opacity','0.03');
+      el.setAttribute('stroke-opacity','0.03');
+      el.setAttribute('r', el.dataset.baseR);
+      el.setAttribute('stroke-width', p.selected?2.5:1);
+      el.style.pointerEvents='none';
+      return;
+    }
+    el.style.pointerEvents='auto';
+    if(quadQuery){
+      if(matchesSearch){
+        el.setAttribute('fill-opacity','0.95');
+        el.setAttribute('stroke-opacity','1');
+        el.setAttribute('stroke', '#FFFFFF');
+        el.setAttribute('stroke-width','3');
+        el.setAttribute('r', parseFloat(el.dataset.baseR)+2);
+      } else {
+        el.setAttribute('fill-opacity','0.06');
+        el.setAttribute('stroke-opacity','0.06');
+        el.setAttribute('stroke', el.dataset.baseCol);
+        el.setAttribute('stroke-width', p.selected?2.5:1);
+        el.setAttribute('r', el.dataset.baseR);
+      }
+    } else {
+      el.setAttribute('fill-opacity', p.selected?'0.85':'0.65');
+      el.setAttribute('stroke-opacity','1');
+      el.setAttribute('stroke', el.dataset.baseCol);
+      el.setAttribute('stroke-width', p.selected?2.5:1);
+      el.setAttribute('r', el.dataset.baseR);
+    }
+  });
+  const info = document.getElementById('quadMatchInfo');
+  if(quadQuery){
+    info.innerHTML = matchCount>0 ? `<b>${matchCount}개</b> 제품이 일치합니다 (흰 테두리로 표시)` : '일치하는 제품이 없습니다';
+  } else {
+    info.innerHTML = '';
+  }
+}
+document.getElementById('quadSearch').addEventListener('input', (e)=>{
+  quadQuery = e.target.value.trim().toLowerCase();
+  updateDots();
+});
+updateDots();
+
+// ---------- Ranking ----------
+const rankMetrics = [
+  {key:'revenue', label:'전환매출', unit:'원', fmt:fmt},
+  {key:'roas', label:'ROAS', unit:'%', fmt:v=>v.toFixed(0)},
+  {key:'cost', label:'광고비', unit:'원', fmt:fmt},
+  {key:'ctr', label:'CTR', unit:'%', fmt:v=>v.toFixed(2)},
+  {key:'cvr', label:'CVR', unit:'%', fmt:v=>v.toFixed(2)},
+];
+let curRank = 'revenue';
+function renderRankToggle(){
+  document.getElementById('rankToggle').innerHTML = rankMetrics.map(m=>`<button class="toggle-btn ${m.key===curRank?'active':''}" data-k="${m.key}">${m.label}</button>`).join('');
+  document.querySelectorAll('#rankToggle .toggle-btn').forEach(b=>{ b.addEventListener('click', ()=>{ curRank=b.dataset.k; renderRankToggle(); renderRank(); }); });
+}
+function renderRank(){
+  const m = rankMetrics.find(x=>x.key===curRank);
+  const sorted = [...PRODUCTS].filter(p=>p.cost>0).sort((a,b)=>b[m.key]-a[m.key]).slice(0,15);
+  const max = Math.max(...sorted.map(p=>p[m.key]));
+  document.getElementById('rankPanel').innerHTML = sorted.map((p,i)=>`
+    <div class="bar-row ${p.selected?'selected':''}" ${p.selected?`title="선정 품목: ${p.selectedLabel}"`:''}>
+      <div class="bar-name"><span class="rank">${i+1}</span>${p.name}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.max(2,p[m.key]/max*100)}%;background:${p.selected?cssVar('var(--flag)'):colorOf(p.category)}"></div></div>
+      <div class="bar-val">${m.fmt(p[m.key])}${m.unit}</div>
+    </div>`).join('');
+}
+renderRankToggle(); renderRank();
+
+// ---------- Category table ----------
+const catAgg = {};
+PRODUCTS.forEach(p=>{
+  if(!catAgg[p.category]) catAgg[p.category]={cost:0,revenue:0,impressions:0,clicks:0,count:0};
+  const a=catAgg[p.category]; a.cost+=p.cost; a.revenue+=p.revenue; a.impressions+=p.impressions; a.clicks+=p.clicks; a.count++;
+});
+const catRows = Object.entries(catAgg).sort((a,b)=>b[1].revenue-a[1].revenue);
+document.getElementById('catTable').innerHTML = `
+  <thead><tr><th>카테고리</th><th>제품 수</th><th>노출수</th><th>클릭수</th><th>CTR</th><th>광고비</th><th>전환매출</th><th>ROAS</th></tr></thead>
+  <tbody>${catRows.map(([cat,a])=>`
+    <tr><td><div class="cat-name"><span class="dot" style="background:${colorOf(cat)}"></span>${cat}</div></td>
+    <td>${a.count}</td><td>${fmt(a.impressions)}</td><td>${fmt(a.clicks)}</td><td>${(a.clicks/a.impressions*100).toFixed(2)}%</td>
+    <td>${fmt(a.cost)}</td><td>${fmt(a.revenue)}</td>
+    <td class="${a.revenue/a.cost*100>=250?'roas-good':''}">${(a.revenue/a.cost*100).toFixed(0)}%</td></tr>`).join('')}</tbody>`;
+
+// ---------- Data table ----------
+const cols = [
+  {key:'rank', label:'#', fmt:v=>v},{key:'name', label:'제품명'},{key:'category', label:'카테고리'},
+  {key:'impressions', label:'노출수', fmt:fmt},{key:'clicks', label:'클릭수', fmt:fmt},{key:'ctr', label:'CTR', fmt:v=>v.toFixed(2)+'%'},
+  {key:'cpc', label:'CPC', fmt:fmt},{key:'cost', label:'광고비', fmt:fmt},{key:'conversions', label:'전환수', fmt:fmt},
+  {key:'cvr', label:'CVR', fmt:v=>v.toFixed(2)+'%'},{key:'revenue', label:'전환매출', fmt:fmt},{key:'roas', label:'ROAS', fmt:v=>v.toFixed(0)+'%'},
+];
+let sortKey='rank', sortDir=1, activeCat=null, searchStr='', onlySelected=false;
+function buildChips(){
+  const chips = ['전체', ...cats];
+  document.getElementById('catChips').innerHTML = chips.map(c=>`<button class="chip ${((c==='전체'&&!activeCat)||c===activeCat)?'active':''}" data-c="${c}">${c}</button>`).join('')
+    + `<button class="chip flag-chip ${onlySelected?'active':''}" id="flagChip">★ 선정 품목만</button>`;
+  document.querySelectorAll('.chip:not(.flag-chip)').forEach(b=>{ b.addEventListener('click', ()=>{ activeCat = b.dataset.c==='전체' ? null : b.dataset.c; buildChips(); renderTable(); }); });
+  document.getElementById('flagChip').addEventListener('click', ()=>{ onlySelected = !onlySelected; buildChips(); renderTable(); });
+}
+buildChips();
+document.getElementById('search').addEventListener('input', (e)=>{ searchStr = e.target.value.trim().toLowerCase(); renderTable(); });
+function renderTable(){
+  let rows = PRODUCTS.filter(p=>{
+    if(activeCat && p.category!==activeCat) return false;
+    if(onlySelected && !p.selected) return false;
+    if(searchStr && !p.name.toLowerCase().includes(searchStr)) return false;
+    return true;
+  });
+  rows.sort((a,b)=>{ let av=a[sortKey], bv=b[sortKey]; if(typeof av==='string') return sortDir*av.localeCompare(bv); return sortDir*(av-bv); });
+  const thead = `<thead><tr>${cols.map(c=>`<th data-k="${c.key}" class="${c.key===sortKey?'sorted':''}">${c.label}${c.key===sortKey?(sortDir===1?' ▲':' ▼'):''}</th>`).join('')}</tr></thead>`;
+  const tbody = `<tbody>${rows.map(p=>`
+    <tr class="${p.selected?'selected':''}" ${p.selected?`title="선정 품목: ${p.selectedLabel}"`:''}>
+    <td>${p.rank}</td><td><span class="pname" title="${p.name}">${p.selected?'★ ':''}${p.name}</span></td><td><span class="tag">${p.category}</span></td>
+    <td>${fmt(p.impressions)}</td><td>${fmt(p.clicks)}</td><td>${p.ctr.toFixed(2)}%</td><td>${fmt(p.cpc)}</td><td>${fmt(p.cost)}</td>
+    <td>${fmt(p.conversions)}</td><td>${p.cvr.toFixed(2)}%</td><td>${fmt(p.revenue)}</td>
+    <td class="${p.roas>=250?'roas-good':(p.roas<100?'roas-bad':'')}">${p.roas.toFixed(0)}%</td></tr>`).join('')}</tbody>`;
+  document.getElementById('dataTable').innerHTML = thead+tbody;
+  document.querySelectorAll('#dataTable th').forEach(th=>{
+    th.addEventListener('click', ()=>{ const k = th.dataset.k; if(sortKey===k) sortDir*=-1; else { sortKey=k; sortDir = (k==='name'||k==='category')?1:-1; } renderTable(); });
+  });
+}
+renderTable();
+
+// ---------- TAB 3: target item rough calc ----------
+const targets = PRODUCTS.filter(p=>p.selected);
+function renderTargetTable(){
+  const rowsHtml = targets.map(p=>{
+    const aov = p.revenue/p.conversions;
+    return `<tr data-rank="${p.rank}">
+      <td>${p.name}</td>
+      <td>${p.ctr.toFixed(2)}%</td>
+      <td>${p.cvr.toFixed(2)}%</td>
+      <td>${fmt(p.cost)}</td>
+      <td>${fmt(p.revenue)}</td>
+      <td>${p.roas.toFixed(0)}%</td>
+      <td><input type="number" class="tgtCtr" step="0.1" value="${p.ctr.toFixed(2)}"></td>
+      <td><input type="number" class="tgtCvr" step="0.1" value="${p.cvr.toFixed(2)}"></td>
+      <td class="resRevenue">${fmt(p.revenue)}</td>
+      <td class="resRoas">${p.roas.toFixed(0)}%</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('targetTable').innerHTML = `
+    <thead><tr>
+      <th>제품명</th><th>현재 CTR</th><th>현재 CVR</th><th>광고비</th><th>현재 전환매출</th><th>현재 ROAS</th>
+      <th>목표 CTR</th><th>목표 CVR</th><th>예상 전환매출</th><th>예상 ROAS</th>
+    </tr></thead>
+    <tbody>${rowsHtml}</tbody>`;
+  document.querySelectorAll('#targetTable tbody tr').forEach(tr=>{
+    const rank = parseInt(tr.dataset.rank);
+    const p = PRODUCTS.find(x=>x.rank===rank);
+    const aov = p.revenue/p.conversions;
+    const recalc = ()=>{
+      const ctr = parseFloat(tr.querySelector('.tgtCtr').value)||p.ctr;
+      const cvr = parseFloat(tr.querySelector('.tgtCvr').value)||p.cvr;
+      const clicks = p.cost / p.cpc;
+      const conv = clicks * (cvr/100);
+      const revenue = conv * aov;
+      const roas = revenue / p.cost * 100;
+      const revCell = tr.querySelector('.resRevenue');
+      const roasCell = tr.querySelector('.resRoas');
+      revCell.textContent = fmt(revenue);
+      revCell.className = 'resRevenue ' + (revenue>=p.revenue?'res-up':'res-down');
+      roasCell.textContent = roas.toFixed(0)+'%';
+      roasCell.className = 'resRoas ' + (roas>=p.roas?'res-up':'res-down');
+    };
+    tr.querySelector('.tgtCtr').addEventListener('input', recalc);
+    tr.querySelector('.tgtCvr').addEventListener('input', recalc);
+  });
+}
+renderTargetTable();
+
+// ---------- TAB 4: Calculator ----------
+const calcSelect = document.getElementById('calcProduct');
+const calcSearch = document.getElementById('calcSearch');
+const calcable = PRODUCTS.filter(p=>p.conversions>0).sort((a,b)=>b.cost-a.cost);
+function buildCalcOptions(query){
+  const q = (query||'').trim().toLowerCase();
+  const list = q ? calcable.filter(p=>p.name.toLowerCase().includes(q)) : calcable;
+  const prev = calcSelect.value;
+  calcSelect.innerHTML = (list.length?list:calcable).map(p=>`<option value="${p.rank}">${p.selected?'★ ':''}${p.name}</option>`).join('');
+  if(list.some(p=>String(p.rank)===prev)) calcSelect.value = prev;
+  return list.length?list[0]:calcable[0];
+}
+let defaultProd = calcable.find(p=>p.name.includes('팁스케치')) || calcable[0];
+buildCalcOptions('');
+calcSelect.value = defaultProd.rank;
+calcSearch.addEventListener('input', ()=>{
+  const first = buildCalcOptions(calcSearch.value);
+  if(first) { calcSelect.value = first.rank; runCalc(); }
+});
+
+// ---- percentile-based recommendation ----
+function percentile(arr, p){
+  const s=[...arr].sort((a,b)=>a-b);
+  if(s.length===0) return 0;
+  const idx=(p/100)*(s.length-1);
+  const lo=Math.floor(idx), hi=Math.ceil(idx);
+  if(lo===hi) return s[lo];
+  return s[lo]+(s[hi]-s[lo])*(idx-lo);
+}
+function getRecommendation(p){
+  let pool = PRODUCTS.filter(x=>x.category===p.category && x.cost>=50000 && x.conversions>0);
+  if(pool.length<3) pool = PRODUCTS.filter(x=>x.cost>=50000 && x.conversions>0);
+  const benchCtr = percentile(pool.map(x=>x.ctr), 75);
+  const benchCvr = percentile(pool.map(x=>x.cvr), 75);
+  const recCtr = Math.min(Math.max(p.ctr, benchCtr), p.ctr*2.2);
+  const recCvr = Math.min(Math.max(p.cvr, benchCvr), p.cvr*2.2);
+  const recCpc = recCtr>p.ctr ? Math.round(p.cpc*Math.sqrt(p.ctr/recCtr)) : p.cpc;
+  return {ctr:recCtr, cvr:recCvr, cpc:recCpc, benchCtr, benchCvr, poolSize:pool.length};
+}
+function renderRecommendation(p, aov){
+  const rec = getRecommendation(p);
+  const clicks = p.cost / rec.cpc;
+  const conversions = clicks * (rec.cvr/100);
+  const revenue = conversions * aov;
+  const roas = revenue/p.cost*100;
+  document.getElementById('recoBox').innerHTML = `
+    <div class="reco-head">
+      <span class="reco-title">📌 추천 목표치 기준 예상효과</span>
+      <span class="reco-desc">동일 카테고리(${p.category}) 상위 25% 성과 기준 자동 산출</span>
+    </div>
+    <div class="reco-grid">
+      <span class="item">추천 CTR <b>${rec.ctr.toFixed(2)}%</b></span>
+      <span class="item">추천 CPC <b>${fmt(rec.cpc)}원</b></span>
+      <span class="item">추천 CVR <b>${rec.cvr.toFixed(2)}%</b></span>
+    </div>
+    <div class="reco-result">
+      <span class="item">예상 전환매출<b>${fmt(revenue)}원</b></span>
+      <span class="item">예상 ROAS<b>${roas.toFixed(0)}%</b></span>
+      <span class="item">현재 대비<b class="${revenue>=p.revenue?'up':'down'}" style="font-family:var(--font-body);font-size:13px;">${revenue>=p.revenue?'▲':'▼'} ${Math.abs((revenue-p.revenue)/p.revenue*100).toFixed(1)}%</b></span>
+    </div>
+    <button class="reco-apply" id="applyReco">이 추천값을 계산기에 적용</button>
+  `;
+  document.getElementById('applyReco').addEventListener('click', ()=>{
+    document.getElementById('inCtr').value = rec.ctr.toFixed(2);
+    document.getElementById('inCpc').value = rec.cpc;
+    document.getElementById('inCvr').value = rec.cvr.toFixed(2);
+    computeAndRender(p, aov);
+  });
+}
+
+function runCalc(){
+  const rank = parseInt(calcSelect.value);
+  const p = PRODUCTS.find(x=>x.rank===rank);
+  const aov = p.revenue / p.conversions;
+  document.getElementById('curCost').textContent = '현재 '+fmt(p.cost)+'원';
+  document.getElementById('curCtr').textContent = '현재 '+p.ctr.toFixed(2)+'%';
+  document.getElementById('curCpc').textContent = '현재 '+fmt(p.cpc)+'원';
+  document.getElementById('curCvr').textContent = '현재 '+p.cvr.toFixed(2)+'%';
+  document.getElementById('inCost').value = p.cost;
+  document.getElementById('inCtr').value = p.ctr;
+  document.getElementById('inCpc').value = p.cpc;
+  document.getElementById('inCvr').value = p.cvr;
+  document.getElementById('inGoalRevenue').value = '';
+  renderRecommendation(p, aov);
+  computeAndRender(p, aov);
+}
+function computeAndRender(p, aov){
+  const cost = parseFloat(document.getElementById('inCost').value)||p.cost;
+  const ctr = parseFloat(document.getElementById('inCtr').value)||p.ctr;
+  const cpc = parseFloat(document.getElementById('inCpc').value)||p.cpc;
+  const cvr = parseFloat(document.getElementById('inCvr').value)||p.cvr;
+  const goalRevenue = parseFloat(document.getElementById('inGoalRevenue').value);
+
+  const clicks = cost / cpc;
+  const impressions = clicks / (ctr/100);
+  const conversions = clicks * (cvr/100);
+  const revenue = conversions * aov;
+  const roas = revenue / cost * 100;
+
+  const cells = [
+    {lbl:'예상 유입량(클릭)', cur:fmt(p.clicks), val:fmt(clicks), diff:(clicks-p.clicks)/p.clicks*100},
+    {lbl:'예상 노출수', cur:fmt(p.impressions), val:fmt(impressions), diff:(impressions-p.impressions)/p.impressions*100},
+    {lbl:'예상 전환수', cur:fmt(p.conversions), val:fmt(conversions), diff:(conversions-p.conversions)/p.conversions*100},
+    {lbl:'예상 전환매출', cur:fmt(p.revenue)+'원', val:fmt(revenue)+'원', diff:(revenue-p.revenue)/p.revenue*100, big:true},
+    {lbl:'예상 ROAS', cur:p.roas.toFixed(0)+'%', val:roas.toFixed(0)+'%', diff:roas-p.roas},
+    {lbl:'객단가(AOV, 고정)', cur:'-', val:fmt(aov)+'원', diff:null},
+  ];
+  document.getElementById('calcResult').innerHTML = cells.map(c=>`
+    <div class="calc-cell ${c.big?'goal':''}">
+      <div class="lbl">${c.lbl}</div>
+      <div class="cur-val">기존 ${c.cur}</div>
+      <div class="new-val">${c.val}</div>
+      ${c.diff===null?'':`<div class="delta ${c.diff>=0?'up':'down'}">${c.diff>=0?'▲':'▼'} ${Math.abs(c.diff).toFixed(1)}${c.lbl.includes('ROAS')?'%p':'%'}</div>`}
+    </div>`).join('');
+
+  const goalBox = document.getElementById('goalHint');
+  if(goalRevenue && goalRevenue>0){
+    const neededConv = goalRevenue / aov;
+    const neededCvr = neededConv / clicks * 100;
+    goalBox.style.display = 'block';
+    goalBox.innerHTML = `목표 매출액 <b>${fmt(goalRevenue)}원</b> 달성에 필요한 전환수는 <b>${fmt(neededConv)}건</b>, 현재 설정된 유입량(${fmt(clicks)}클릭) 기준 필요 CVR은 <b>${neededCvr.toFixed(2)}%</b>입니다.`
+      + (neededCvr>100? ' <span style="color:var(--bad)">— 유입량 대비 비현실적으로 높은 CVR입니다. 광고비 또는 CPC를 함께 조정해보세요.</span>':'');
+  } else {
+    goalBox.style.display = 'none';
+  }
+}
+calcSelect.addEventListener('change', runCalc);
+['inCost','inCtr','inCpc','inCvr','inGoalRevenue'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', ()=>{
+    const p = PRODUCTS.find(x=>x.rank===parseInt(calcSelect.value));
+    const aov = p.revenue/p.conversions;
+    computeAndRender(p, aov);
+  });
+});
+runCalc();
+</script>
+</body>
+</html>
