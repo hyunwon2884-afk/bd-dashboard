@@ -84,6 +84,24 @@ table.hero-table tr.selected td:first-child{color:var(--flag);font-weight:700;}
 table.hero-table tr.selected{background:color-mix(in srgb, var(--flag) 8%, transparent);}
 .mini-tag{display:inline-block;font-size:10px;padding:2px 7px;margin-left:8px;border:1px solid var(--flag);color:var(--flag);vertical-align:middle;font-weight:600;}
 .diag-tag{display:inline-block;font-size:11px;padding:2px 8px;background:var(--surface-2);color:var(--text-dim);}
+.hero-table tr.item-row{cursor:pointer;}
+.hero-table tr.item-row:hover{background:var(--surface-2);}
+.expand-arrow{display:inline-block;width:10px;color:var(--text-faint);font-size:10px;margin-right:6px;transition:transform .18s;}
+.hero-table tr.item-row.is-open .expand-arrow{transform:rotate(90deg);color:var(--accent-strong);}
+tr.hero-detail{display:none;}
+tr.hero-detail.is-open{display:table-row;}
+tr.hero-detail td{padding:0 !important;border-bottom:1px solid var(--border);}
+.hero-detail-inner{background:var(--surface-2);padding:16px 20px;display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start;}
+.hd-col{min-width:104px;}
+.hd-col .hd-lbl{display:block;font-size:11px;color:var(--text-faint);margin-bottom:4px;}
+.hd-col b{font-family:var(--font-head);font-size:16px;font-weight:600;}
+.hd-col.target b{color:var(--accent-strong);}
+.hd-col.result b{color:var(--flag);}
+.hd-arrow{align-self:center;color:var(--text-faint);font-size:16px;padding-top:14px;}
+.hd-sep{width:1px;align-self:stretch;background:var(--border);}
+.hd-delta{display:block;font-size:11.5px;font-weight:600;margin-top:2px;}
+.hd-delta.flat{color:var(--text-faint);font-weight:500;}
+.hd-note{width:100%;font-size:11.8px;color:var(--text-faint);line-height:1.6;padding:0 20px 16px;background:var(--surface-2);}
 
 /* Quadrant (shared) */
 .quad-wrap{display:grid;grid-template-columns:1fr 260px;gap:24px;}
@@ -117,6 +135,11 @@ table.hero-table tr.selected{background:color-mix(in srgb, var(--flag) 8%, trans
   font-family:var(--font-body);font-size:12.5px;padding:6px 12px;cursor:pointer;transition:.15s;}
 .toggle-btn:hover{color:var(--text);}
 .toggle-btn.active{background:var(--accent);border-color:var(--accent);color:#12211A;font-weight:600;}
+.rank-filter-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;font-size:12.5px;color:var(--text-dim);}
+.rank-filter-row label{color:var(--text-faint);}
+.rank-filter-row select{background:var(--surface-2);border:1px solid var(--border);color:var(--text);
+  font-family:var(--font-body);font-size:12.5px;padding:6px 10px;}
+.rank-excluded-note{color:var(--text-faint);font-size:11.5px;}
 .bar-row{display:grid;grid-template-columns:210px 1fr 96px;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);}
 .bar-row:last-child{border-bottom:none;}
 .bar-name{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text);}
@@ -276,9 +299,19 @@ footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-
     <div class="sec-head">
       <div>
         <div class="sec-title">제품 순위</div>
-        <div class="sec-desc">기준 지표를 바꿔가며 상위 15개 제품을 비교합니다. 빨간 제품명은 선정 품목입니다.</div>
+        <div class="sec-desc">기준 지표를 바꿔가며 상위 15개 제품을 비교합니다. 빨간 제품명은 선정 품목입니다. 광고비가 극히 작은 SKU는 ROAS가 수천 %로 튀어 순위를 왜곡할 수 있어, 최소 광고비 필터를 함께 제공합니다.</div>
       </div>
       <div class="toggle-row" id="rankToggle"></div>
+    </div>
+    <div class="rank-filter-row">
+      <label for="rankMinSpend">최소 광고비</label>
+      <select id="rankMinSpend">
+        <option value="0">전체 (필터 없음)</option>
+        <option value="50000" selected>5만원 이상</option>
+        <option value="100000">10만원 이상</option>
+        <option value="300000">30만원 이상</option>
+      </select>
+      <span id="rankExcludedNote" class="rank-excluded-note"></span>
     </div>
     <div class="panel" id="rankPanel"></div>
   </section>
@@ -381,7 +414,7 @@ footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-
 
 <script>
 const PRODUCTS = [{"rank": 1, "name": "그라펜 셀프스트레이트/다운펌/옆머리/잔머리관리 100ml, 1개", "category": "헤어", "impressions": 114718, "clicks": 3482, "ctr": 3.0, "cpc": 1181, "cost": 4110748, "conversions": 676, "cvr": 19.4, "cpa": 6081, "revenue": 10106180, "roas": 245.8, "selected": true, "selectedLabel": "다운펌"}, {"rank": 2, "name": "그라펜 세정력좋은 수성포마드왁스 제주해수포마드 100g, 1개", "category": "헤어", "impressions": 58825, "clicks": 1414, "ctr": 2.4, "cpc": 1773, "cost": 2507713, "conversions": 318, "cvr": 22.5, "cpa": 7886, "revenue": 6457760, "roas": 257.5, "selected": true, "selectedLabel": "해수 포마드"}, {"rank": 3, "name": "그라펜 강력고정/가스타입 제주 해수 메가홀드스프레이 250ml, 1개", "category": "헤어", "impressions": 46908, "clicks": 512, "ctr": 1.1, "cpc": 2055, "cost": 1052108, "conversions": 88, "cvr": 17.2, "cpa": 11956, "revenue": 1755200, "roas": 166.8, "selected": false}, {"rank": 4, "name": "그라펜 볼륨업 휘핑토닉 250ml, 1개", "category": "헤어", "impressions": 42649, "clicks": 770, "ctr": 1.8, "cpc": 1167, "cost": 898345, "conversions": 148, "cvr": 19.2, "cpa": 6070, "revenue": 3539200, "roas": 394.0, "selected": false}, {"rank": 5, "name": "그라펜 볼륨 업 헤어 핀처 앞머리 가르마 뿌리 집게", "category": "액세서리", "impressions": 121235, "clicks": 1402, "ctr": 1.2, "cpc": 421, "cost": 589961, "conversions": 4, "cvr": 0.3, "cpa": 147490, "revenue": 80000, "roas": 13.6, "selected": false}, {"rank": 6, "name": "그라펜 팁스케치 리퀴드 커버 파운데이션 20ml 21호 라이트베이지", "category": "메이크업", "impressions": 19562, "clicks": 335, "ctr": 1.7, "cpc": 1738, "cost": 582383, "conversions": 20, "cvr": 6.0, "cpa": 29119, "revenue": 599600, "roas": 103.0, "selected": false}, {"rank": 7, "name": "그라펜 노세범선스틱 오일컷선포켓 SPF50+ 15g, 1개", "category": "스킨케어", "impressions": 22674, "clicks": 222, "ctr": 1.0, "cpc": 2349, "cost": 521519, "conversions": 14, "cvr": 6.3, "cpa": 37251, "revenue": 394500, "roas": 75.6, "selected": false}, {"rank": 8, "name": "그라펜 트리플립™ 프로 남자립밤 4종 택1", "category": "메이크업", "impressions": 14633, "clicks": 283, "ctr": 1.9, "cpc": 1798, "cost": 508899, "conversions": 47, "cvr": 16.6, "cpa": 10828, "revenue": 875600, "roas": 172.1, "selected": false}, {"rank": 9, "name": "그라펜 포어올킬™ 원스텝 코팩 5매입", "category": "스킨케어", "impressions": 39585, "clicks": 317, "ctr": 0.8, "cpc": 1552, "cost": 492134, "conversions": 28, "cvr": 8.8, "cpa": 17576, "revenue": 595900, "roas": 121.1, "selected": false}, {"rank": 10, "name": "그라펜 수성포마드왁스 제주해수포마드 100g, 3개", "category": "헤어", "impressions": 32505, "clicks": 209, "ctr": 0.6, "cpc": 2143, "cost": 447892, "conversions": 21, "cvr": 10.0, "cpa": 21328, "revenue": 659200, "roas": 147.2, "selected": false}, {"rank": 11, "name": "그라펜 볼륨 업 컬크림 150ml, 1개", "category": "헤어", "impressions": 25983, "clicks": 382, "ctr": 1.5, "cpc": 1147, "cost": 438171, "conversions": 54, "cvr": 14.1, "cpa": 8114, "revenue": 1261220, "roas": 287.8, "selected": true, "selectedLabel": "볼륨업 컬크림"}, {"rank": 12, "name": "그라펜 트리플립 프로 컬러립 남자립밤 4.3g", "category": "메이크업", "impressions": 11750, "clicks": 228, "ctr": 1.9, "cpc": 1848, "cost": 421296, "conversions": 17, "cvr": 7.5, "cpa": 24782, "revenue": 396000, "roas": 94.0, "selected": false}, {"rank": 13, "name": "그라펜 타투 퍼퓸 원우드 50ml, 1개", "category": "퍼퓸", "impressions": 13530, "clicks": 184, "ctr": 1.4, "cpc": 2268, "cost": 417359, "conversions": 15, "cvr": 8.2, "cpa": 27824, "revenue": 763900, "roas": 183.0, "selected": false}, {"rank": 14, "name": "그라펜 톤커버시카로션 50ml(SPF50+)", "category": "메이크업", "impressions": 14097, "clicks": 191, "ctr": 1.4, "cpc": 1528, "cost": 291872, "conversions": 18, "cvr": 9.4, "cpa": 16215, "revenue": 573800, "roas": 196.6, "selected": false}, {"rank": 15, "name": "그라펜 EWG그린 세이프 헤어왁스 75g, 1개", "category": "헤어", "impressions": 14097, "clicks": 186, "ctr": 1.3, "cpc": 1279, "cost": 237898, "conversions": 23, "cvr": 12.4, "cpa": 10343, "revenue": 421810, "roas": 177.3, "selected": false}, {"rank": 16, "name": "그라펜 트리플립 프로 핸섬립 남자립밤 4.3g", "category": "메이크업", "impressions": 8587, "clicks": 159, "ctr": 1.9, "cpc": 1414, "cost": 224748, "conversions": 14, "cvr": 8.8, "cpa": 16053, "revenue": 287000, "roas": 127.7, "selected": false}, {"rank": 17, "name": "그라펜 타투 퍼퓸 원우드 29ml, 1개", "category": "퍼퓸", "impressions": 12316, "clicks": 286, "ctr": 2.3, "cpc": 666, "cost": 190502, "conversions": 7, "cvr": 2.4, "cpa": 27215, "revenue": 267000, "roas": 140.2, "selected": false}, {"rank": 18, "name": "그라펜 팁스케치 리퀴드 커버 파운데이션 20ml 23호 샌드", "category": "메이크업", "impressions": 5445, "clicks": 78, "ctr": 1.4, "cpc": 2337, "cost": 182324, "conversions": 10, "cvr": 12.8, "cpa": 18232, "revenue": 284700, "roas": 156.2, "selected": false}, {"rank": 19, "name": "그라펜 볼륨업 휘핑토닉 100ml, 1개", "category": "헤어", "impressions": 12846, "clicks": 339, "ctr": 2.6, "cpc": 532, "cost": 180386, "conversions": 59, "cvr": 17.4, "cpa": 3057, "revenue": 1160450, "roas": 643.3, "selected": false}, {"rank": 20, "name": "그라펜 원스텝 매트 왁스 70g", "category": "헤어", "impressions": 10217, "clicks": 112, "ctr": 1.1, "cpc": 1409, "cost": 157781, "conversions": 19, "cvr": 17.0, "cpa": 8304, "revenue": 393210, "roas": 249.2, "selected": false}, {"rank": 21, "name": "그라펜 의료용실리콘 두피마사지 엣지핑거 레드", "category": "소품", "impressions": 65533, "clicks": 249, "ctr": 0.4, "cpc": 621, "cost": 154539, "conversions": 14, "cvr": 5.6, "cpa": 11039, "revenue": 197300, "roas": 127.7, "selected": false}, {"rank": 22, "name": "그라펜 브로우업 브로우펜슬 0.5g(3종구성)", "category": "메이크업", "impressions": 27613, "clicks": 262, "ctr": 0.9, "cpc": 575, "cost": 150671, "conversions": 27, "cvr": 10.3, "cpa": 5580, "revenue": 347000, "roas": 230.3, "selected": false}, {"rank": 23, "name": "그라펜 타투 퍼퓸 코튼헤이즈 50ml, 1개", "category": "퍼퓸", "impressions": 12149, "clicks": 71, "ctr": 0.6, "cpc": 1480, "cost": 105080, "conversions": 1, "cvr": 1.4, "cpa": 105080, "revenue": 49000, "roas": 46.6, "selected": false}, {"rank": 24, "name": "그라펜 제주 해수 메가홀드스프레이 100ml, 1개", "category": "헤어", "impressions": 10277, "clicks": 177, "ctr": 1.7, "cpc": 584, "cost": 103367, "conversions": 27, "cvr": 15.3, "cpa": 3828, "revenue": 481800, "roas": 466.1, "selected": false}, {"rank": 25, "name": "그라펜 제주해수 볼륨 스프레이 210ml", "category": "헤어", "impressions": 6918, "clicks": 109, "ctr": 1.6, "cpc": 780, "cost": 85057, "conversions": 17, "cvr": 15.6, "cpa": 5003, "revenue": 673500, "roas": 791.8, "selected": false}, {"rank": 26, "name": "멀티 유즈 바디 퍼퓸 스프레이", "category": "바디케어", "impressions": 3933, "clicks": 41, "ctr": 1.0, "cpc": 1795, "cost": 73581, "conversions": 2, "cvr": 4.9, "cpa": 36791, "revenue": 79800, "roas": 108.5, "selected": false}, {"rank": 27, "name": "그라펜 올인원 멀티 유즈 바디 퍼퓸 스프레이 200ml 2종 택1", "category": "바디케어", "impressions": 13573, "clicks": 198, "ctr": 1.5, "cpc": 357, "cost": 70683, "conversions": 22, "cvr": 11.1, "cpa": 3213, "revenue": 696800, "roas": 985.8, "selected": false}, {"rank": 28, "name": "그라펜 모공커버 엣지컷 블랜더 메이크업 퍼프", "category": "소품", "impressions": 9901, "clicks": 94, "ctr": 0.9, "cpc": 515, "cost": 48398, "conversions": 25, "cvr": 26.6, "cpa": 1936, "revenue": 260000, "roas": 537.2, "selected": false}, {"rank": 29, "name": "그라펜 타투 퍼퓸 니스빌 50ml, 1개", "category": "퍼퓸", "impressions": 3946, "clicks": 39, "ctr": 1.0, "cpc": 1232, "cost": 48039, "conversions": 2, "cvr": 5.1, "cpa": 24020, "revenue": 98000, "roas": 204.0, "selected": false}, {"rank": 30, "name": "그라펜 그루밍 클레이 하드 왁스 75ml", "category": "헤어", "impressions": 4409, "clicks": 85, "ctr": 1.9, "cpc": 561, "cost": 47679, "conversions": 11, "cvr": 12.9, "cpa": 4334, "revenue": 245100, "roas": 514.1, "selected": false}, {"rank": 31, "name": "그라펜 매치업 파운데이션 40ml(SPF20)+퍼프", "category": "메이크업", "impressions": 2510, "clicks": 76, "ctr": 3.0, "cpc": 607, "cost": 46163, "conversions": 19, "cvr": 25.0, "cpa": 2430, "revenue": 595900, "roas": 1290.9, "selected": false}, {"rank": 32, "name": "그라펜 타투 퍼퓸 레더 50ml, 1개", "category": "퍼퓸", "impressions": 4920, "clicks": 81, "ctr": 1.6, "cpc": 549, "cost": 44494, "conversions": 3, "cvr": 3.7, "cpa": 14831, "revenue": 110130, "roas": 247.5, "selected": false}, {"rank": 33, "name": "그라펜 포어올킬™ 타이트닝 세럼 30ml", "category": "스킨케어", "impressions": 6333, "clicks": 45, "ctr": 0.7, "cpc": 930, "cost": 41835, "conversions": 3, "cvr": 6.7, "cpa": 13945, "revenue": 88000, "roas": 210.4, "selected": false}, {"rank": 34, "name": "그라펜 타투 퍼퓸 레몬 50ml, 1개", "category": "퍼퓸", "impressions": 7177, "clicks": 76, "ctr": 1.1, "cpc": 541, "cost": 41098, "conversions": 2, "cvr": 2.6, "cpa": 20549, "revenue": 98000, "roas": 238.5, "selected": false}, {"rank": 35, "name": "그라펜 딜라이트 향수 오 드 퍼퓸", "category": "퍼퓸", "impressions": 5092, "clicks": 56, "ctr": 1.1, "cpc": 585, "cost": 32775, "conversions": 0, "cvr": 0.0, "cpa": 0, "revenue": 0, "roas": 0.0, "selected": false}, {"rank": 36, "name": "그라펜 트리플립 프로 립센스 남자립밤 3.9g", "category": "메이크업", "impressions": 3978, "clicks": 59, "ctr": 1.5, "cpc": 522, "cost": 30793, "conversions": 5, "cvr": 8.5, "cpa": 6159, "revenue": 102000, "roas": 331.2, "selected": false}, {"rank": 37, "name": "그라펜 매치업 쉐딩스틱 1.8g", "category": "메이크업", "impressions": 4599, "clicks": 67, "ctr": 1.5, "cpc": 429, "cost": 28744, "conversions": 12, "cvr": 17.9, "cpa": 2395, "revenue": 224000, "roas": 779.3, "selected": false}, {"rank": 38, "name": "그라펜 딥클렌징 리무버 샴푸 500ml", "category": "헤어", "impressions": 3657, "clicks": 63, "ctr": 1.7, "cpc": 455, "cost": 28653, "conversions": 5, "cvr": 7.9, "cpa": 5731, "revenue": 151700, "roas": 529.4, "selected": false}, {"rank": 39, "name": "그라펜 멀티 스타일링 포마드빗", "category": "소품", "impressions": 5294, "clicks": 48, "ctr": 0.9, "cpc": 580, "cost": 27825, "conversions": 2, "cvr": 4.2, "cpa": 13913, "revenue": 37500, "roas": 134.8, "selected": false}, {"rank": 40, "name": "그라펜 제주 해수 스프레이 210ml, 1개", "category": "헤어", "impressions": 2261, "clicks": 45, "ctr": 2.0, "cpc": 596, "cost": 26839, "conversions": 14, "cvr": 31.1, "cpa": 1917, "revenue": 350500, "roas": 1305.9, "selected": true, "selectedLabel": "제주해수 스프레이"}, {"rank": 41, "name": "그라펜 카밍그린 올인원로션 150ml, 1개", "category": "스킨케어", "impressions": 9270, "clicks": 43, "ctr": 0.5, "cpc": 624, "cost": 26835, "conversions": 4, "cvr": 9.3, "cpa": 6709, "revenue": 78360, "roas": 292.0, "selected": false}, {"rank": 42, "name": "그라펜 카밍그린 올인원로션 150ml, 2개", "category": "스킨케어", "impressions": 3520, "clicks": 39, "ctr": 1.1, "cpc": 646, "cost": 25193, "conversions": 13, "cvr": 33.3, "cpa": 1938, "revenue": 350400, "roas": 1390.9, "selected": false}, {"rank": 43, "name": "그라펜 3in1 핸섬 커버 쿠션 14g", "category": "메이크업", "impressions": 1659, "clicks": 37, "ctr": 2.2, "cpc": 633, "cost": 23409, "conversions": 6, "cvr": 16.2, "cpa": 3902, "revenue": 174540, "roas": 745.6, "selected": false}, {"rank": 44, "name": "그라펜 3in1 핸섬 커버 쿠션 리필 14g", "category": "메이크업", "impressions": 1999, "clicks": 46, "ctr": 2.3, "cpc": 506, "cost": 23277, "conversions": 14, "cvr": 30.4, "cpa": 1663, "revenue": 350270, "roas": 1504.8, "selected": false}, {"rank": 45, "name": "그라펜 셀프스트레이트/다운펌 100ml, 2개", "category": "헤어", "impressions": 5527, "clicks": 48, "ctr": 0.9, "cpc": 472, "cost": 22663, "conversions": 11, "cvr": 22.9, "cpa": 2060, "revenue": 308800, "roas": 1362.6, "selected": false}, {"rank": 46, "name": "그라펜 매치업 톤커버 로션 50ml+10ml", "category": "메이크업", "impressions": 2838, "clicks": 79, "ctr": 2.8, "cpc": 238, "cost": 18831, "conversions": 20, "cvr": 25.3, "cpa": 942, "revenue": 540540, "roas": 2870.5, "selected": false}, {"rank": 47, "name": "그라펜 포어올킬™ 딥클렌징 스크러버", "category": "스킨케어", "impressions": 5969, "clicks": 35, "ctr": 0.6, "cpc": 535, "cost": 18738, "conversions": 1, "cvr": 2.9, "cpa": 18738, "revenue": 9000, "roas": 48.0, "selected": false}, {"rank": 48, "name": "그라펜 노세범선스틱 오일컷선포켓 15g, 2개", "category": "스킨케어", "impressions": 6815, "clicks": 44, "ctr": 0.6, "cpc": 406, "cost": 17872, "conversions": 7, "cvr": 15.9, "cpa": 2553, "revenue": 245000, "roas": 1370.9, "selected": false}, {"rank": 49, "name": "그라펜 셀프스트레이트/다운펌 100ml, 3개", "category": "헤어", "impressions": 5124, "clicks": 37, "ctr": 0.7, "cpc": 471, "cost": 17422, "conversions": 14, "cvr": 37.8, "cpa": 1244, "revenue": 410650, "roas": 2357.1, "selected": false}, {"rank": 50, "name": "그라펜 타투 퍼퓸 원우드 핸드크림 50ml", "category": "바디케어", "impressions": 3811, "clicks": 34, "ctr": 0.9, "cpc": 499, "cost": 16959, "conversions": 0, "cvr": 0.0, "cpa": 0, "revenue": 0, "roas": 0.0, "selected": false}, {"rank": 51, "name": "그라펜 EWG그린 세이프 헤어왁스 75g, 3개", "category": "헤어", "impressions": 2431, "clicks": 37, "ctr": 1.5, "cpc": 452, "cost": 16732, "conversions": 11, "cvr": 29.7, "cpa": 1521, "revenue": 360000, "roas": 2151.6, "selected": false}, {"rank": 52, "name": "그라펜 포어올킬™ 코팩 4세트", "category": "스킨케어", "impressions": 9311, "clicks": 28, "ctr": 0.3, "cpc": 583, "cost": 16316, "conversions": 2, "cvr": 7.1, "cpa": 8158, "revenue": 90800, "roas": 556.5, "selected": false}, {"rank": 53, "name": "그라펜 루트부스터SE 샴푸 500ml", "category": "헤어", "impressions": 1127, "clicks": 24, "ctr": 2.1, "cpc": 658, "cost": 15798, "conversions": 1, "cvr": 4.2, "cpa": 15798, "revenue": 39800, "roas": 251.9, "selected": false}, {"rank": 54, "name": "그라펜 타투 퍼퓸 클로버 50ml, 1개", "category": "퍼퓸", "impressions": 2051, "clicks": 30, "ctr": 1.5, "cpc": 517, "cost": 15498, "conversions": 2, "cvr": 6.7, "cpa": 7749, "revenue": 98000, "roas": 632.3, "selected": false}, {"rank": 55, "name": "그라펜 히노키 샴푸 500ml", "category": "헤어", "impressions": 3503, "clicks": 29, "ctr": 0.8, "cpc": 529, "cost": 15328, "conversions": 3, "cvr": 10.3, "cpa": 5109, "revenue": 81500, "roas": 531.7, "selected": false}, {"rank": 56, "name": "그라펜 선포켓오일컷+팁스케치 2종 세트", "category": "스킨케어", "impressions": 3816, "clicks": 35, "ctr": 0.9, "cpc": 424, "cost": 14831, "conversions": 5, "cvr": 14.3, "cpa": 2966, "revenue": 169800, "roas": 1144.9, "selected": false}, {"rank": 57, "name": "그라펜 팁스케치+쉐딩스틱 메이크업 2종세트", "category": "메이크업", "impressions": 1961, "clicks": 25, "ctr": 1.3, "cpc": 567, "cost": 14166, "conversions": 1, "cvr": 4.0, "cpa": 14166, "revenue": 28000, "roas": 197.7, "selected": false}, {"rank": 58, "name": "그라펜 제주 해수 메가홀드스프레이 350ml, 1개", "category": "헤어", "impressions": 3080, "clicks": 25, "ctr": 0.8, "cpc": 551, "cost": 13768, "conversions": 2, "cvr": 8.0, "cpa": 6884, "revenue": 45000, "roas": 326.8, "selected": false}, {"rank": 59, "name": "그라펜 포어올킬™ 미스트 토너 120ml", "category": "스킨케어", "impressions": 2567, "clicks": 38, "ctr": 1.5, "cpc": 341, "cost": 12968, "conversions": 7, "cvr": 18.4, "cpa": 1853, "revenue": 170600, "roas": 1315.5, "selected": false}, {"rank": 60, "name": "그라펜 노세범선스틱 오일컷선포켓 15g, 3개", "category": "스킨케어", "impressions": 3871, "clicks": 37, "ctr": 1.0, "cpc": 333, "cost": 12323, "conversions": 5, "cvr": 13.5, "cpa": 2465, "revenue": 375000, "roas": 3043.1, "selected": false}, {"rank": 61, "name": "그라펜 그루밍 버블 토닉 150ml", "category": "헤어", "impressions": 1493, "clicks": 29, "ctr": 1.9, "cpc": 423, "cost": 12269, "conversions": 1, "cvr": 3.4, "cpa": 12269, "revenue": 15200, "roas": 123.9, "selected": false}, {"rank": 62, "name": "그라펜 볼륨업 휘핑토닉 100ml, 2개", "category": "헤어", "impressions": 2633, "clicks": 24, "ctr": 0.9, "cpc": 448, "cost": 10743, "conversions": 4, "cvr": 16.7, "cpa": 2686, "revenue": 82050, "roas": 763.8, "selected": false}, {"rank": 63, "name": "그라펜 트리플립 프로 네이키드 남자립밤 3.9g", "category": "메이크업", "impressions": 1620, "clicks": 17, "ctr": 1.0, "cpc": 606, "cost": 10297, "conversions": 2, "cvr": 11.8, "cpa": 5149, "revenue": 34200, "roas": 332.1, "selected": false}, {"rank": 64, "name": "그라펜 핸섬타투브로우 0.8g", "category": "메이크업", "impressions": 4487, "clicks": 31, "ctr": 0.7, "cpc": 324, "cost": 10031, "conversions": 0, "cvr": 0.0, "cpa": 0, "revenue": 0, "roas": 0.0, "selected": false}, {"rank": 65, "name": "그라펜 매치업 커버스틱 파운데이션 12g", "category": "메이크업", "impressions": 525, "clicks": 8, "ctr": 1.5, "cpc": 1076, "cost": 8611, "conversions": 2, "cvr": 25.0, "cpa": 4306, "revenue": 37900, "roas": 440.1, "selected": false}, {"rank": 66, "name": "그라펜 셀프스트레이트/다운펌 100ml, 4개", "category": "헤어", "impressions": 3415, "clicks": 20, "ctr": 0.6, "cpc": 425, "cost": 8509, "conversions": 3, "cvr": 15.0, "cpa": 2836, "revenue": 35800, "roas": 420.7, "selected": false}, {"rank": 67, "name": "그라펜 콜라겐볼륨앰플 100ml", "category": "헤어", "impressions": 1750, "clicks": 29, "ctr": 1.7, "cpc": 292, "cost": 8462, "conversions": 0, "cvr": 0.0, "cpa": 0, "revenue": 0, "roas": 0.0, "selected": false}, {"rank": 68, "name": "그라펜 볼륨업 휘핑토닉 250+100, 1개", "category": "헤어", "impressions": 2129, "clicks": 24, "ctr": 1.1, "cpc": 347, "cost": 8331, "conversions": 0, "cvr": 0.0, "cpa": 0, "revenue": 0, "roas": 0.0, "selected": false}, {"rank": 69, "name": "그라펜 볼륨업 휘핑토닉 250ml, 2개(컬크림 증정)", "category": "헤어", "impressions": 2419, "clicks": 17, "ctr": 0.7, "cpc": 448, "cost": 7623, "conversions": 1, "cvr": 5.9, "cpa": 7623, "revenue": 42500, "roas": 557.5, "selected": false}, {"rank": 70, "name": "그라펜 대용량 왁스 100ml", "category": "헤어", "impressions": 1341, "clicks": 13, "ctr": 1.0, "cpc": 547, "cost": 7107, "conversions": 2, "cvr": 15.4, "cpa": 3554, "revenue": 102000, "roas": 1435.2, "selected": false}, {"rank": 71, "name": "그라펜 헤어 스타일링 3종 풀세트", "category": "헤어", "impressions": 560, "clicks": 4, "ctr": 0.7, "cpc": 1704, "cost": 6814, "conversions": 0, "cvr": 0.0, "cpa": 0, "revenue": 0, "roas": 0.0, "selected": false}, {"rank": 72, "name": "그라펜 루트부스터토닉 160ml", "category": "헤어", "impressions": 1810, "clicks": 17, "ctr": 0.9, "cpc": 399, "cost": 6780, "conversions": 1, "cvr": 5.9, "cpa": 6780, "revenue": 37800, "roas": 557.5, "selected": false}, {"rank": 73, "name": "그라펜 볼륨 업 컬크림 150ml, 2개", "category": "헤어", "impressions": 1435, "clicks": 11, "ctr": 0.8, "cpc": 411, "cost": 4517, "conversions": 1, "cvr": 9.1, "cpa": 4517, "revenue": 18000, "roas": 398.5, "selected": false}, {"rank": 74, "name": "그라펜 리무버 샴푸 500ml+브러쉬 세트", "category": "헤어", "impressions": 1393, "clicks": 13, "ctr": 0.9, "cpc": 339, "cost": 4406, "conversions": 0, "cvr": 0.0, "cpa": 0, "revenue": 0, "roas": 0.0, "selected": false}, {"rank": 75, "name": "그라펜 제주 해수 스프레이 210ml, 2개", "category": "헤어", "impressions": 885, "clicks": 14, "ctr": 1.6, "cpc": 171, "cost": 2399, "conversions": 4, "cvr": 28.6, "cpa": 600, "revenue": 138500, "roas": 5773.2, "selected": false}, {"rank": 76, "name": "그라펜 시카 케어 트리트먼트 300ml", "category": "헤어", "impressions": 734, "clicks": 6, "ctr": 0.8, "cpc": 373, "cost": 2239, "conversions": 3, "cvr": 50.0, "cpa": 746, "revenue": 47000, "roas": 2099.2, "selected": false}, {"rank": 77, "name": "그라펜 트리플립 핸섬립 립밤 4.3g, 2개", "category": "메이크업", "impressions": 472, "clicks": 6, "ctr": 1.3, "cpc": 370, "cost": 2222, "conversions": 0, "cvr": 0.0, "cpa": 0, "revenue": 0, "roas": 0.0, "selected": false}, {"rank": 78, "name": "그라펜 컨트롤 페이스트 왁스+해수스프레이 2종 세트", "category": "헤어", "impressions": 936, "clicks": 6, "ctr": 0.6, "cpc": 363, "cost": 2176, "conversions": 0, "cvr": 0.0, "cpa": 0, "revenue": 0, "roas": 0.0, "selected": false}, {"rank": 79, "name": "그라펜 팁스케치+트리플립 메이크업 2종세트", "category": "메이크업", "impressions": 575, "clicks": 4, "ctr": 0.7, "cpc": 497, "cost": 1988, "conversions": 1, "cvr": 25.0, "cpa": 1988, "revenue": 44500, "roas": 2238.4, "selected": false}];
-const HERO_GROUPS = {"heroEff": {"title": "① HERO 효율 개선", "criterion": "선정 기준: 매출액 규모 상위 제품 중 CTR·CVR 진단상 개선 여지가 있는 제품", "action": "조치: 썸네일 · 상품명 · 상세페이지 교체 → '선정 품목 계산기' / '기대효과 계산기' 탭에서 개선 후 예상 성과 시뮬레이션", "items": [{"name": "팁스케치 21호", "cost": 582383, "revenue": 599600, "roas": 103.0, "ctr": 1.7, "cpc": 1738, "cvr": 6.0, "cpa": 29119, "diag": "CTR / CVR 개선"}, {"name": "트리플립 PRO", "cost": 508899, "revenue": 875600, "roas": 172.1, "ctr": 1.9, "cpc": 1798, "cvr": 16.6, "cpa": 10828, "diag": "광고 효율 개선"}, {"name": "원스텝 코팩", "cost": 492134, "revenue": 595900, "roas": 121.1, "ctr": 0.8, "cpc": 1552, "cvr": 8.8, "cpa": 17576, "diag": "CTR 개선"}]}, "scaleUp": {"title": "② SCALE UP", "criterion": "선정 기준: ROAS · CVR은 높으나 광고비 규모가 작아 확대 여력이 있는 제품", "action": "조치: 예산 확대는 마케팅 판단만으로 진행하지 않고, MD팀과 재고 · 물량 · 프로모션 일정을 함께 협의해 결정", "items": [{"name": "볼륨업 휘핑토닉 250ml", "cost": 898345, "revenue": 3539200, "roas": 394.0, "ctr": 1.8, "cpc": 1167, "cvr": 19.2, "cpa": 6070, "diag": "예산 확대 테스트"}, {"name": "볼륨업 컬크림 150ml", "cost": 438171, "revenue": 1261220, "roas": 287.8, "ctr": 1.5, "cpc": 1147, "cvr": 14.1, "cpa": 8114, "diag": "예산 확대 테스트", "tag": "선정 품목"}, {"name": "제주 해수 볼륨 스프레이 210ml", "cost": 85057, "revenue": 673500, "roas": 791.8, "ctr": 1.6, "cpc": 780, "cvr": 15.6, "cpa": 5003, "diag": "예산 확대 테스트"}, {"name": "제주 해수 스프레이 210ml", "cost": 26839, "revenue": 350500, "roas": 1305.9, "ctr": 2.0, "cpc": 596, "cvr": 31.1, "cpa": 1917, "diag": "소액 확대 테스트", "tag": "선정 품목"}]}, "coreHero": {"title": "③ CORE HERO", "criterion": "선정 기준: 광고비 · 매출 규모가 가장 크고 성과가 안정적인 주력 운영 제품", "action": "조치: 현재 운영 방식 유지, 예산 급변 없이 안정적으로 집행", "items": [{"name": "제주해수 포마드 100g", "cost": 2507713, "revenue": 6457760, "roas": 257.5, "ctr": 2.4, "cpc": 1773, "cvr": 22.5, "cpa": 7886, "diag": "주력 운영", "tag": "선정 품목"}, {"name": "셀프스트레이트/다운펌 100ml", "cost": 4110748, "revenue": 10106180, "roas": 245.8, "ctr": 3.0, "cpc": 1181, "cvr": 19.4, "cpa": 6081, "diag": "네이버 전용 · 주력 운영", "tag": "네이버 전용 · 선정 품목"}]}};
+const HERO_GROUPS = {"heroEff": {"title": "① HERO 효율 개선", "criterion": "선정 기준: 매출액 규모 상위 제품 중 CTR·CVR 진단상 개선 여지가 있는 제품", "action": "조치: 썸네일 · 상품명 · 상세페이지 교체 → '선정 품목 계산기' / '기대효과 계산기' 탭에서 개선 후 예상 성과 시뮬레이션", "items": [{"name": "팁스케치 21호", "cost": 582383, "revenue": 599600, "roas": 103.0, "ctr": 1.7, "cpc": 1738, "cvr": 6.0, "cpa": 29119, "diag": "CTR / CVR 개선", "rank": 6}, {"name": "트리플립 PRO", "cost": 508899, "revenue": 875600, "roas": 172.1, "ctr": 1.9, "cpc": 1798, "cvr": 16.6, "cpa": 10828, "diag": "광고 효율 개선", "rank": 8}, {"name": "원스텝 코팩", "cost": 492134, "revenue": 595900, "roas": 121.1, "ctr": 0.8, "cpc": 1552, "cvr": 8.8, "cpa": 17576, "diag": "CTR 개선", "rank": 9}]}, "scaleUp": {"title": "② SCALE UP", "criterion": "선정 기준: ROAS · CVR은 높으나 광고비 규모가 작아 확대 여력이 있는 제품", "action": "조치: 예산 확대는 마케팅 판단만으로 진행하지 않고, MD팀과 재고 · 물량 · 프로모션 일정을 함께 협의해 결정", "items": [{"name": "볼륨업 휘핑토닉 250ml", "cost": 898345, "revenue": 3539200, "roas": 394.0, "ctr": 1.8, "cpc": 1167, "cvr": 19.2, "cpa": 6070, "diag": "예산 확대 테스트", "rank": 4}, {"name": "볼륨업 컬크림 150ml", "cost": 438171, "revenue": 1261220, "roas": 287.8, "ctr": 1.5, "cpc": 1147, "cvr": 14.1, "cpa": 8114, "diag": "예산 확대 테스트", "tag": "선정 품목", "rank": 11}, {"name": "제주 해수 볼륨 스프레이 210ml", "cost": 85057, "revenue": 673500, "roas": 791.8, "ctr": 1.6, "cpc": 780, "cvr": 15.6, "cpa": 5003, "diag": "예산 확대 테스트", "rank": 25}, {"name": "제주 해수 스프레이 210ml", "cost": 26839, "revenue": 350500, "roas": 1305.9, "ctr": 2.0, "cpc": 596, "cvr": 31.1, "cpa": 1917, "diag": "소액 확대 테스트", "tag": "선정 품목", "rank": 40}]}, "coreHero": {"title": "③ CORE HERO", "criterion": "선정 기준: 광고비 · 매출 규모가 가장 크고 성과가 안정적인 주력 운영 제품", "action": "조치: 현재 운영 방식 유지, 예산 급변 없이 안정적으로 집행", "items": [{"name": "제주해수 포마드 100g", "cost": 2507713, "revenue": 6457760, "roas": 257.5, "ctr": 2.4, "cpc": 1773, "cvr": 22.5, "cpa": 7886, "diag": "주력 운영", "tag": "선정 품목", "rank": 2}, {"name": "셀프스트레이트/다운펌 100ml", "cost": 4110748, "revenue": 10106180, "roas": 245.8, "ctr": 3.0, "cpc": 1181, "cvr": 19.4, "cpa": 6081, "diag": "네이버 전용 · 주력 운영", "tag": "네이버 전용 · 선정 품목", "rank": 1, "customTarget": {"ctrDeltaPp": 1.0, "note": "메타 광고 병행으로 CTR·전반 지표가 개선 중인 메인 제품 — 카테고리 평균 대비 갭이 아니라 현재 대비 CTR +1%p를 목표로 잡고, CVR은 하락 없이 현재 수준을 유지한다고 가정합니다."}}]}};
 
 const CAT_COLOR = {
   "헤어":"var(--hair)","메이크업":"var(--makeup)","스킨케어":"var(--skin)",
@@ -423,8 +456,26 @@ document.getElementById('kpiRow').innerHTML = kpis.map(k=>`
   <div class="kpi ${k.accent?'accent':''}"><div class="lbl">${k.lbl}</div><div class="val">${k.val}${k.unit?`<small>${k.unit}</small>`:''}</div></div>
 `).join('');
 
+// ---------- Category averages (weighted, for target-hypothesis panel) ----------
+const categoryAvg = {};
+{
+  const acc = {};
+  PRODUCTS.forEach(p=>{
+    if(!acc[p.category]) acc[p.category]={impressions:0,clicks:0,conversions:0};
+    acc[p.category].impressions+=p.impressions; acc[p.category].clicks+=p.clicks; acc[p.category].conversions+=p.conversions;
+  });
+  Object.entries(acc).forEach(([cat,a])=>{
+    categoryAvg[cat] = { ctr: a.clicks/a.impressions*100, cvr: a.conversions/a.clicks*100 };
+  });
+}
+// symmetric-gap target hypothesis: if below category average, target = avg + (avg - current)
+function targetHypothesis(current, avg){
+  return current < avg ? (2*avg - current) : current;
+}
+
 // ---------- Hero groups (overview) ----------
 const heroColor = {heroEff:'var(--hero1)', scaleUp:'var(--hero2)', coreHero:'var(--hero3)'};
+let heroUid = 0;
 document.getElementById('heroGroups').innerHTML = Object.entries(HERO_GROUPS).map(([key,g])=>`
   <div class="hero-group">
     <div class="hero-group-head">
@@ -437,9 +488,14 @@ document.getElementById('heroGroups').innerHTML = Object.entries(HERO_GROUPS).ma
       <table class="hero-table">
         <thead><tr><th>제품명</th><th>광고비</th><th>전환매출</th><th>ROAS</th><th>CTR</th><th>CPC</th><th>CVR</th><th>CPA</th><th>진단</th></tr></thead>
         <tbody>
-          ${g.items.map(it=>`
-            <tr class="${it.tag?'selected':''}" ${it.tag?`title="선정 품목: ${it.tag}"`:''}>
-              <td>${it.name}${it.tag?`<span class="mini-tag">${it.tag}</span>`:''}</td>
+          ${g.items.map(it=>{
+            const uid = 'hd'+(heroUid++);
+            const prod = PRODUCTS.find(x=>x.rank===it.rank);
+            const cat = prod ? prod.category : null;
+            const avg = cat ? categoryAvg[cat] : null;
+            return `
+            <tr class="item-row ${it.tag?'selected':''}" data-target="${uid}" ${it.tag?`title="선정 품목: ${it.tag}"`:''}>
+              <td><span class="expand-arrow">▶</span>${it.name}${it.tag?`<span class="mini-tag">${it.tag}</span>`:''}</td>
               <td>${fmt(it.cost)}</td>
               <td>${fmt(it.revenue)}</td>
               <td>${it.roas.toFixed(1)}%</td>
@@ -448,12 +504,91 @@ document.getElementById('heroGroups').innerHTML = Object.entries(HERO_GROUPS).ma
               <td>${it.cvr.toFixed(2)}%</td>
               <td>${fmt(it.cpa)}</td>
               <td><span class="diag-tag">${it.diag}</span></td>
-            </tr>`).join('')}
+            </tr>
+            <tr class="hero-detail" id="${uid}"><td colspan="9">${renderHeroDetail(it, prod, avg)}</td></tr>`;
+          }).join('')}
         </tbody>
       </table>
     </div>
   </div>
 `).join('');
+document.querySelectorAll('.hero-table tr.item-row').forEach(tr=>{
+  tr.addEventListener('click', ()=>{
+    const detail = document.getElementById(tr.dataset.target);
+    const nowOpen = detail.classList.toggle('is-open');
+    tr.classList.toggle('is-open', nowOpen);
+  });
+});
+
+function renderHeroDetail(it, prod, avg){
+  if(!prod || !avg){
+    return `<div class="hero-detail-inner"><div class="hd-note">카테고리 데이터를 찾을 수 없습니다.</div></div>`;
+  }
+  const aov = prod.revenue / prod.conversions;
+
+  if(it.customTarget){
+    // custom fixed-delta target (e.g. flagship product with its own growth assumption)
+    const ct = it.customTarget;
+    const targetCtr = it.ctr + ct.ctrDeltaPp;
+    const targetCvr = it.cvr; // floor: assume no decrease
+    const targetCpc = Math.round(it.cpc*Math.sqrt(it.ctr/targetCtr));
+    const clicks = it.cost/targetCpc;
+    const conversions = clicks*(targetCvr/100);
+    const expRevenue = conversions*aov;
+    const expRoas = expRevenue/it.cost*100;
+    const diffPct = (expRevenue-it.revenue)/it.revenue*100;
+    return `
+    <div class="hero-detail-inner">
+      <div class="hd-col"><span class="hd-lbl">현재 CTR</span><b>${it.ctr.toFixed(2)}%</b></div>
+      <div class="hd-col"><span class="hd-lbl">현재 CVR</span><b>${it.cvr.toFixed(2)}%</b></div>
+      <div class="hd-arrow">→</div>
+      <div class="hd-col target"><span class="hd-lbl">목표 CTR (현재 +${ct.ctrDeltaPp.toFixed(1)}%p)</span><b>${targetCtr.toFixed(2)}%</b></div>
+      <div class="hd-col target"><span class="hd-lbl">목표 CVR (하락 없음 가정)</span><b>${targetCvr.toFixed(2)}%</b></div>
+      <div class="hd-col target"><span class="hd-lbl">목표 CPC (추정)</span><b>${fmt(targetCpc)}원</b></div>
+      <div class="hd-sep"></div>
+      <div class="hd-col result"><span class="hd-lbl">가설 반영 예상 전환매출</span><b>${fmt(expRevenue)}원</b>
+        <span class="hd-delta ${expRevenue>=it.revenue?'up':'down'}">${expRevenue>=it.revenue?'▲':'▼'} ${Math.abs(diffPct).toFixed(1)}%</span></div>
+      <div class="hd-col result"><span class="hd-lbl">가설 반영 예상 ROAS</span><b>${expRoas.toFixed(0)}%</b>
+        <span class="hd-delta ${expRoas>=it.roas?'up':'down'}">${expRoas>=it.roas?'▲':'▼'} ${Math.abs(expRoas-it.roas).toFixed(1)}%p</span></div>
+    </div>
+    <div class="hd-note">${ct.note}</div>`;
+  }
+
+  const aboveAvg = it.ctr>=avg.ctr && it.cvr>=avg.cvr;
+  const targetCtr = targetHypothesis(it.ctr, avg.ctr);
+  const targetCvr = targetHypothesis(it.cvr, avg.cvr);
+  const targetCpc = targetCtr>it.ctr ? Math.round(it.cpc*Math.sqrt(it.ctr/targetCtr)) : it.cpc;
+  let expRevenue, expRoas;
+  const noChange = Math.abs(targetCtr-it.ctr)<0.0001 && Math.abs(targetCvr-it.cvr)<0.0001;
+  if(noChange){
+    // target identical to current → use actual measured figures, no reconstruction drift
+    expRevenue = it.revenue;
+    expRoas = it.roas;
+  } else {
+    const clicks = it.cost/targetCpc;
+    const conversions = clicks*(targetCvr/100);
+    expRevenue = conversions*aov;
+    expRoas = expRevenue/it.cost*100;
+  }
+  const diffPct = (expRevenue-it.revenue)/it.revenue*100;
+  return `
+    <div class="hero-detail-inner">
+      <div class="hd-col"><span class="hd-lbl">카테고리(${prod.category}) 평균 CTR</span><b>${avg.ctr.toFixed(2)}%</b></div>
+      <div class="hd-col"><span class="hd-lbl">카테고리 평균 CVR</span><b>${avg.cvr.toFixed(2)}%</b></div>
+      <div class="hd-arrow">→</div>
+      <div class="hd-col target"><span class="hd-lbl">목표 CTR (가설)</span><b>${targetCtr.toFixed(2)}%</b></div>
+      <div class="hd-col target"><span class="hd-lbl">목표 CVR (가설)</span><b>${targetCvr.toFixed(2)}%</b></div>
+      <div class="hd-col target"><span class="hd-lbl">목표 CPC (추정)</span><b>${fmt(targetCpc)}원</b></div>
+      <div class="hd-sep"></div>
+      <div class="hd-col result"><span class="hd-lbl">가설 반영 예상 전환매출</span><b>${fmt(expRevenue)}원</b>
+        <span class="hd-delta ${noChange?'flat':(expRevenue>=it.revenue?'up':'down')}">${noChange?'변화 없음(현재값 유지)':`${expRevenue>=it.revenue?'▲':'▼'} ${Math.abs(diffPct).toFixed(1)}%`}</span></div>
+      <div class="hd-col result"><span class="hd-lbl">가설 반영 예상 ROAS</span><b>${expRoas.toFixed(0)}%</b>
+        <span class="hd-delta ${noChange?'flat':(expRoas>=it.roas?'up':'down')}">${noChange?'변화 없음(현재값 유지)':`${expRoas>=it.roas?'▲':'▼'} ${Math.abs(expRoas-it.roas).toFixed(1)}%p`}</span></div>
+    </div>
+    <div class="hd-note">${aboveAvg
+      ? '이미 카테고리 평균 CTR·CVR을 모두 웃돌고 있어 별도 목표 가설을 적용하지 않았습니다(현재값 유지).'
+      : '가설: 카테고리 평균보다 낮은 지표는 "평균 + (평균 − 현재 지표)"만큼 끌어올린다고 가정합니다. 예: 평균 CTR 2%, 현재 1% → 목표 3%. 목표 CPC는 CTR 개선 비율의 제곱근만큼 하락한다고 가정한 추정치이며, 객단가는 현재 전환매출 ÷ 현재 전환수로 고정했습니다.'}</div>`;
+}
 
 // ---------- Quadrant (products tab) ----------
 function median(arr){ const s=[...arr].sort((a,b)=>a-b); const mid=Math.floor(s.length/2); return s.length%2? s[mid] : (s[mid-1]+s[mid])/2; }
@@ -601,13 +736,20 @@ const rankMetrics = [
   {key:'cvr', label:'CVR', unit:'%', fmt:v=>v.toFixed(2)},
 ];
 let curRank = 'revenue';
+let minSpend = 50000;
 function renderRankToggle(){
   document.getElementById('rankToggle').innerHTML = rankMetrics.map(m=>`<button class="toggle-btn ${m.key===curRank?'active':''}" data-k="${m.key}">${m.label}</button>`).join('');
   document.querySelectorAll('#rankToggle .toggle-btn').forEach(b=>{ b.addEventListener('click', ()=>{ curRank=b.dataset.k; renderRankToggle(); renderRank(); }); });
 }
+document.getElementById('rankMinSpend').addEventListener('change', (e)=>{
+  minSpend = parseInt(e.target.value);
+  renderRank();
+});
 function renderRank(){
   const m = rankMetrics.find(x=>x.key===curRank);
-  const sorted = [...PRODUCTS].filter(p=>p.cost>0).sort((a,b)=>b[m.key]-a[m.key]).slice(0,15);
+  const excluded = PRODUCTS.filter(p=>p.cost>0 && p.cost<minSpend).length;
+  document.getElementById('rankExcludedNote').textContent = excluded>0 ? `광고비 ${fmt(minSpend)}원 미만 ${excluded}개 제품 제외됨` : '';
+  const sorted = [...PRODUCTS].filter(p=>p.cost>=minSpend).sort((a,b)=>b[m.key]-a[m.key]).slice(0,15);
   const max = Math.max(...sorted.map(p=>p[m.key]));
   document.getElementById('rankPanel').innerHTML = sorted.map((p,i)=>`
     <div class="bar-row ${p.selected?'selected':''}" ${p.selected?`title="선정 품목: ${p.selectedLabel}"`:''}>
