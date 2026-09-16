@@ -185,6 +185,17 @@ tr.hero-detail td{padding:0 !important;border-bottom:1px solid var(--border);}
 .rationale-cell{text-align:left !important;max-width:260px;}
 .rationale-cell .tag{display:inline-block;margin-bottom:4px;white-space:normal;}
 .rationale-sub{display:block;font-size:11px;color:var(--text-faint);line-height:1.5;font-weight:400;}
+.tier-badge{display:inline-block;font-size:10.5px;padding:3px 9px;white-space:nowrap;font-weight:600;}
+.tier-badge.tier1{background:var(--flag);color:#fff;}
+.tier-badge.tier2{background:var(--surface-2);border:1px solid var(--border);color:var(--text-faint);}
+th.current-col, td.current-col{color:var(--text-faint);}
+th.target-col{color:var(--accent-strong) !important;}
+td.target-col{background:color-mix(in srgb, var(--accent) 8%, transparent);}
+td.target-col b{color:var(--accent-strong);font-weight:700;}
+.cell-delta{display:block;font-size:10.5px;margin-top:2px;font-weight:600;}
+.cell-delta.up{color:var(--accent-strong);}
+.cell-delta.down{color:var(--bad);}
+.cell-delta.flat{color:var(--text-faint);font-weight:400;}
 
 /* Data table */
 .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;}
@@ -294,7 +305,7 @@ footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-
     <div class="sec-head">
       <div>
         <div class="sec-title">선정 품목 요약 — 6개 타깃, 목표 반영 시 매출 임팩트</div>
-        <div class="sec-desc">다운펌 · 해수 포마드 · 볼륨업 컬크림 · 제주해수 스프레이 · 트리플립 PRO · 팁스케치 21호. 제품별로 다른 근거(카테고리 평균까지 · 메타 광고 반영 고정 성장 · 예산 확대)로 목표를 잡고, 그 목표를 달성했을 때 전체 매출이 어떻게 바뀌는지 보여줍니다.</div>
+        <div class="sec-desc"><b style="color:var(--flag);">1순위(우선 진행)</b>: 다운펌 · 해수 포마드 · 팁스케치 21호 &nbsp;|&nbsp; <b style="color:var(--text-faint);">2순위(후순위)</b>: 트리플립 PRO · 볼륨업 컬크림 · 제주해수 스프레이. 제품별로 다른 근거(카테고리 평균까지 · 메타 광고 반영 고정 성장 · 예산 확대)로 목표를 잡고, 그 목표를 달성했을 때 전체 매출이 어떻게 바뀌는지 보여줍니다. 아래 표에서 옅은 색 열은 현재값, 진한 초록 열은 목표값입니다.</div>
       </div>
     </div>
     <div class="kpi-row" id="summaryKpiRow"></div>
@@ -483,6 +494,7 @@ const DAILY_DATA = {"1": [{"day": 1, "impressions": 3346, "clicks": 111, "ctr": 
 const HERO_CUSTOM_TARGETS = {};
 Object.values(HERO_GROUPS).forEach(g=>g.items.forEach(it=>{ if(it.customTarget) HERO_CUSTOM_TARGETS[it.rank] = it.customTarget; }));
 const SELECTED_RANKS = [1,2,6,8,11,40];
+const PRIORITY_TIER = {1:1, 2:1, 6:1, 8:2, 11:2, 40:2}; // 1순위: 다운펌·해수포마드·팁스케치21호 / 2순위: 트리플립PRO·컬크림·제주해수스프레이
 
 const CAT_COLOR = {
   "헤어":"var(--hair)","메이크업":"var(--makeup)","스킨케어":"var(--skin)",
@@ -1220,11 +1232,13 @@ runCalc();
 
 // ---------- TAB: Selected-items summary (front tab) ----------
 (function(){
-  const items = SELECTED_RANKS.map(rank=>{
-    const p = PRODUCTS.find(x=>x.rank===rank);
-    const t = computeTargetForRank(rank);
-    return {p, t, diff: t.revenue - p.revenue, diffPct: (t.revenue-p.revenue)/p.revenue*100};
-  });
+  const items = SELECTED_RANKS
+    .map(rank=>{
+      const p = PRODUCTS.find(x=>x.rank===rank);
+      const t = computeTargetForRank(rank);
+      return {p, t, diff: t.revenue - p.revenue, diffPct: (t.revenue-p.revenue)/p.revenue*100, tier: PRIORITY_TIER[rank]};
+    })
+    .sort((a,b)=>a.tier-b.tier);
   const curTotalSelected = items.reduce((s,x)=>s+x.p.revenue,0);
   const tgtTotalSelected = items.reduce((s,x)=>s+x.t.revenue,0);
   const uplift = tgtTotalSelected - curTotalSelected;
@@ -1238,23 +1252,36 @@ runCalc();
     {lbl:'전체 79개 제품 총매출 → 목표 반영 시', val: `${fmt(curGrandTotal)} → ${fmt(tgtGrandTotal)}원`, accent:true},
   ].map(k=>`<div class="kpi ${k.accent?'accent':''}"><div class="lbl">${k.lbl}</div><div class="val" style="font-size:17px;">${k.val}</div></div>`).join('');
 
+  function pctDelta(cur,tgt){
+    const d = tgt-cur;
+    if(Math.abs(d)<0.005) return `<span class="cell-delta flat">변화 없음</span>`;
+    return `<span class="cell-delta ${d>=0?'up':'down'}">${d>=0?'▲':'▼'} ${Math.abs(d).toFixed(2)}%p</span>`;
+  }
+  const tierLabel = {1:{txt:'1순위 · 우선 진행', cls:'tier1'}, 2:{txt:'2순위 · 후순위', cls:'tier2'}};
+
   document.getElementById('summaryTable').innerHTML = `
-    <thead><tr><th>제품명</th><th>목표 방식 · 근거</th><th>현재 CTR</th><th>목표 CTR</th><th>현재 CVR</th><th>목표 CVR</th><th>현재 광고비</th><th>현재 매출</th><th>목표 매출</th><th>증감</th></tr></thead>
-    <tbody>${items.map(({p,t,diff,diffPct})=>{
+    <thead><tr><th>우선순위</th><th>제품명</th><th>목표 방식 · 근거</th><th class="current-col">현재 CTR</th><th class="target-col">목표 CTR</th><th class="current-col">현재 CVR</th><th class="target-col">목표 CVR</th><th class="current-col">현재 광고비</th><th class="current-col">현재 매출</th><th class="target-col">목표 매출</th><th>증감</th></tr></thead>
+    <tbody>${items.map(({p,t,diff,diffPct,tier})=>{
       const rat = targetRationale(p.rank);
+      const tl = tierLabel[tier];
       return `
       <tr>
+        <td><span class="tier-badge ${tl.cls}">${tl.txt}</span></td>
         <td><div class="cat-name"><span class="dot" style="background:${cssVar('var(--flag)')}"></span>${p.name}</div></td>
         <td class="rationale-cell"><span class="tag">${rat.tag}</span><span class="rationale-sub">${rat.line}</span></td>
-        <td>${p.ctr.toFixed(2)}%</td><td>${t.ctr.toFixed(2)}%</td>
-        <td>${p.cvr.toFixed(2)}%</td><td>${t.cvr.toFixed(2)}%</td>
-        <td>${fmt(p.cost)}</td>
-        <td>${fmt(p.revenue)}</td><td>${fmt(t.revenue)}</td>
+        <td class="current-col">${p.ctr.toFixed(2)}%</td>
+        <td class="target-col"><b>${t.ctr.toFixed(2)}%</b>${pctDelta(p.ctr,t.ctr)}</td>
+        <td class="current-col">${p.cvr.toFixed(2)}%</td>
+        <td class="target-col"><b>${t.cvr.toFixed(2)}%</b>${pctDelta(p.cvr,t.cvr)}</td>
+        <td class="current-col">${fmt(p.cost)}</td>
+        <td class="current-col">${fmt(p.revenue)}</td>
+        <td class="target-col"><b>${fmt(t.revenue)}</b></td>
         <td class="${diff>=0?'roas-good':'roas-bad'}">${diff>=0?'▲':'▼'} ${Math.abs(diffPct).toFixed(1)}%</td>
       </tr>`;}).join('')}
       <tr style="font-weight:700;">
-        <td colspan="7">합계</td>
-        <td>${fmt(curTotalSelected)}</td><td>${fmt(tgtTotalSelected)}</td>
+        <td colspan="8">합계</td>
+        <td class="current-col">${fmt(curTotalSelected)}</td>
+        <td class="target-col">${fmt(tgtTotalSelected)}</td>
         <td class="roas-good">▲ ${((tgtTotalSelected-curTotalSelected)/curTotalSelected*100).toFixed(1)}%</td>
       </tr>
     </tbody>`;
