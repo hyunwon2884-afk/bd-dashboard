@@ -85,6 +85,8 @@ nav.tabs button.active{background:var(--accent);color:#12211A;font-weight:700;}
 .track-date-ticks{display:flex;justify-content:space-between;font-size:10px;color:var(--text-faint);}
 .track-tick{flex:1;text-align:center;white-space:nowrap;}
 .track-tick.active{color:var(--accent-strong);font-weight:700;}
+.track-normalize-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:4px 0 14px;}
+.track-normalize-note{font-size:11.5px;color:var(--text-faint);line-height:1.5;}
 .week-summary-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;flex-wrap:wrap;}
 .week-summary-title{font-size:12px;color:var(--text-faint);font-weight:600;}
 .week-sum-row:hover td{background:var(--surface-2);}
@@ -152,6 +154,7 @@ tr.hero-detail td{padding:0 !important;border-bottom:1px solid var(--border);}
 .daily-toggle-btn{margin:12px 20px;background:var(--surface);border:1px solid var(--accent);color:var(--accent-strong);
   font-family:var(--font-body);font-size:12px;padding:7px 14px;cursor:pointer;}
 .daily-toggle-btn:hover{background:var(--accent);color:#12211A;}
+.daily-toggle-btn.active{background:var(--accent);color:#12211A;font-weight:700;}
 .daily-note{margin:0 20px 16px;font-size:11.8px;color:var(--text-faint);font-style:italic;}
 .daily-chart-wrap{padding:0 20px 16px;}
 .daily-chart{background:var(--surface);border:1px solid var(--border);padding:14px 14px 8px;}
@@ -425,6 +428,10 @@ footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-
       <div class="toggle-row" id="trackDateChips" style="margin-bottom:18px;flex-wrap:wrap;"></div>
       <div class="table-scroll"><table class="data" id="trackDateTable"></table></div>
       <div class="legend" id="trackLegend" style="margin:18px 0 10px;"></div>
+      <div class="track-normalize-row">
+        <button id="trackNormalizeToggle" class="daily-toggle-btn" type="button" style="margin:0;">📐 상대 비교(정규화) 보기</button>
+        <span class="track-normalize-note">품목마다 금액 규모가 달라 작은 품목 선이 눌려 보일 때, 각 품목을 자기 기간 내 최고치=100%로 환산해 추이만 비교합니다.</span>
+      </div>
       <div class="track-chart-grid" style="margin-top:6px;">
         <div>
           <div class="section-sub">CTR 추이 (%) — 10/1~10/11</div>
@@ -1762,6 +1769,7 @@ const TRACK_MONTH = '2026-10';
 const TRACK_COLOR_VARS = ['var(--flag)','var(--accent2)','var(--accent-strong)','var(--skin)','var(--perfume)'];
 function trackColor(i){ return cssVar(TRACK_COLOR_VARS[i % TRACK_COLOR_VARS.length]); }
 const trackState = { dateIdx: null };
+let trackNormalized = false;
 
 function trackSvgEl(tag, attrs){ const el = document.createElementNS(svgNS, tag); for(const k in attrs) el.setAttribute(k, attrs[k]); return el; }
 function trackTextEl(x,y,str,attrs={}){
@@ -1867,13 +1875,18 @@ function drawTrackLineChart(svgId, metricKey){
   svg.innerHTML = '';
   const W = 640, H = 210, PAD = {l:58,r:16,t:30,b:26};
   const plotW = W-PAD.l-PAD.r, plotH = H-PAD.t-PAD.b;
+  const norm = trackNormalized;
   const seriesList = TIER1_RANKS.map((rank,i)=>{
     const raw = (DAILY_DATA[TRACK_MONTH]||{})[rank] || [];
-    return {rank, color: trackColor(i), raw, values: raw.map(metric.get), dates: raw.map(d=>d.date)};
+    const rawValues = raw.map(metric.get);
+    const maxOwn = Math.max(...rawValues, 0);
+    const values = norm ? (maxOwn>0 ? rawValues.map(v=>v/maxOwn*100) : rawValues.map(()=>0)) : rawValues;
+    return {rank, color: trackColor(i), raw, values, dates: raw.map(d=>d.date)};
   });
   const n = Math.max(...seriesList.map(s=>s.values.length), 1);
   const allVals = seriesList.flatMap(s=>s.values);
-  const maxY = Math.max(...allVals, 1) * 1.22;
+  const maxY = norm ? 100*1.15 : Math.max(...allVals, 1) * 1.22;
+  const axisFmt = v => norm ? v.toFixed(0)+'%' : metric.fmt(v);
   const xOf = idx => PAD.l + (n<=1 ? 0 : idx/(n-1)) * plotW;
   const yOf = val => PAD.t + plotH - (val/maxY)*plotH;
 
@@ -1887,7 +1900,7 @@ function drawTrackLineChart(svgId, metricKey){
     if(i>0 && i<Y_STEPS){
       svg.appendChild(trackSvgEl('line',{x1:PAD.l,y1:gy,x2:PAD.l+plotW,y2:gy,stroke:cssVar('var(--border)'),'stroke-width':1,opacity:'0.35'}));
     }
-    svg.appendChild(trackTextEl(PAD.l-8, gy+3, metric.fmt(val), {'text-anchor':'end'}));
+    svg.appendChild(trackTextEl(PAD.l-8, gy+3, axisFmt(val), {'text-anchor':'end'}));
   }
 
   if(trackState.dateIdx!=null && n>0){
@@ -1937,6 +1950,15 @@ function renderTrackDetailAndCharts(){
 function renderDailyTrackTab(){
   buildTrackDateChips();
   renderTrackDetailAndCharts();
+}
+const trackNormalizeToggleBtn = document.getElementById('trackNormalizeToggle');
+if(trackNormalizeToggleBtn){
+  trackNormalizeToggleBtn.addEventListener('click', ()=>{
+    trackNormalized = !trackNormalized;
+    trackNormalizeToggleBtn.textContent = trackNormalized ? '📐 절대값 보기' : '📐 상대 비교(정규화) 보기';
+    trackNormalizeToggleBtn.classList.toggle('active', trackNormalized);
+    renderTrackDetailAndCharts();
+  });
 }
 renderDailyTrackTab();
 
