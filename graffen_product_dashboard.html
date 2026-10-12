@@ -1579,21 +1579,30 @@ function renderWeekSummaryTable(){
     const prevAgg = prevDays.length ? periodAgg(prevDays) : null;
     return {pr, agg: periodAgg(seg), hasData: seg.length>0, prevAgg};
   });
-  const headers = ['품목','노출수','클릭수','CTR','광고비','CVR','전환매출','ROAS'];
-  const theadHtml = `<thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead>`;
+  const headers = ['품목','노출수','클릭수','CTR','목표 CTR','광고비','CVR','목표 CVR','전환매출','ROAS','목표 ROAS'];
+  const theadHtml = `<thead><tr>${headers.map(h=>`<th${h.startsWith('목표')?' class="target-col"':''}>${h}</th>`).join('')}</tr></thead>`;
   const ex = selWeekSummaryExpanded;
+  const targetCell = (cur, tgt, isPct)=>{
+    const fmtV = v => isPct ? v.toFixed(2)+'%' : v.toFixed(0)+'%';
+    if(cur>=tgt) return `<td class="target-col"><b>${fmtV(tgt)}</b><div class="cell-delta up" style="margin-top:1px;">✓ 달성</div></td>`;
+    return `<td class="target-col"><b>${fmtV(tgt)}</b><div class="cell-delta flat" style="margin-top:1px;">잔여 ${(tgt-cur).toFixed(2)}%p</div></td>`;
+  };
   const rowsHtml = rows.map(({pr,agg,hasData,prevAgg})=>{
     const isActive = pr.rank===selDailyState.rank;
     const d = (val, base, isRate) => (ex && hasData) ? miniDelta(val, base, isRate) : '';
+    const t = computeTargetForRank(pr.rank);
     return `<tr class="week-sum-row${isActive?' active-row':''}" data-rank="${pr.rank}">
       <td><div class="cat-name"><span class="dot" style="background:${cssVar('var(--flag)')}"></span>${pr.selectedLabel||pr.name}</div></td>
       <td>${hasData?fmt(agg.impr):'—'}${d(agg.impr, prevAgg?prevAgg.impr:null, false)}</td>
       <td>${hasData?fmt(agg.clicks):'—'}${d(agg.clicks, prevAgg?prevAgg.clicks:null, false)}</td>
       <td>${hasData?agg.ctr.toFixed(2)+'%':'—'}${d(agg.ctr, prevAgg?prevAgg.ctr:null, true)}</td>
+      ${targetCell(hasData?agg.ctr:pr.ctr, t.ctr, true)}
       <td>${hasData?fmt(agg.cost)+'원':'—'}${d(agg.cost, prevAgg?prevAgg.cost:null, false)}</td>
       <td>${hasData?agg.cvr.toFixed(2)+'%':'—'}${d(agg.cvr, prevAgg?prevAgg.cvr:null, true)}</td>
+      ${targetCell(hasData?agg.cvr:pr.cvr, t.cvr, true)}
       <td>${hasData?fmt(agg.rev)+'원':'—'}${d(agg.rev, prevAgg?prevAgg.rev:null, false)}</td>
       <td>${hasData?agg.roas.toFixed(0)+'%':'—'}${d(agg.roas, prevAgg?prevAgg.roas:null, true)}</td>
+      ${targetCell(hasData?agg.roas:pr.roas, t.roas, false)}
     </tr>`;
   }).join('');
   wrap.innerHTML = theadHtml + `<tbody>${rowsHtml}</tbody>`;
