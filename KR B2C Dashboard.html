@@ -340,7 +340,27 @@ body:has(.sx[data-sx-theme=light]){background:#f6f7f9}
 .sx-avgwarn button { font: inherit; font-size: 11.5px; margin-left: 6px; padding: 2px 10px; border-radius: 999px; border: 1px solid #f0b429; background: transparent; color: var(--sx-fg); cursor: pointer; }
 .sx-avgtag { display: inline-block; margin-left: 6px; padding: 0 5px; border: 1px solid #f0b429; border-radius: 6px; color: #f0b429; font-size: 10px; font-weight: 400; }
 .sx-filt { gap: 6px; }
+.sx-sidech { display: flex; flex-direction: column; gap: 6px; }
+.sx-sidech .act { display: flex; gap: 4px; }
+.sx-sidech .act button, .sx-sidech .only { font: inherit; font-size: 11.5px; padding: 4px 8px; border-radius: 8px; border: 1px solid var(--sx-line); background: var(--sx-soft); color: var(--sx-fg); cursor: pointer; flex: 1; white-space: nowrap; }
+.sx-sidech .act button:hover, .sx-sidech .only:hover { border-color: var(--sx-hot); color: var(--sx-hot); }
+.sx-sidech .cnt { margin: 0; font-size: 11px; color: var(--sx-muted); }
+.sx-sidech details { border: 1px solid var(--sx-line); border-radius: 10px; background: var(--sx-soft); }
+.sx-sidech summary { list-style: none; display: flex; align-items: center; gap: 6px; padding: 8px 10px; cursor: pointer; font-size: 13px; }
+.sx-sidech summary::-webkit-details-marker { display: none; }
+.sx-sidech summary small { margin-left: auto; color: var(--sx-muted); font-size: 11px; }
+.sx-sidech .ls { display: flex; flex-direction: column; gap: 1px; padding: 0 6px 8px; max-height: 320px; overflow-y: auto; }
+.sx-sidech .only { margin: 2px 0 4px; flex: none; }
+.sx-sidech label { display: flex; align-items: center; gap: 6px; font-size: 12.5px; padding: 3px 4px; border-radius: 6px; cursor: pointer; min-width: 0; }
+.sx-sidech label:hover { background: var(--sx-bg); }
+.sx-sidech label.off span { color: var(--sx-muted); text-decoration: line-through; }
+.sx-sidech label i { width: 8px; height: 8px; border-radius: 2px; flex: none; }
+.sx-sidech label span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sx-bigkpi { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.sx-kpimini .sx-kpi { padding: 10px 14px !important; min-height: 0; }
+.sx-kpimini .sx-kpi .val { font-size: clamp(20px, 1.8vw, 26px) !important; margin: 2px 0 !important; }
+.sx-kpimini .sx-kpi .lab small, .sx-kpimini .sx-kpi .sub { display: none; }
+.sx-kpimini .sx-kpi .dl { font-size: 12px !important; }
 .sx-bigkpi .sx-kpi { padding: 18px 20px; }
 .sx-bigkpi .sx-kpi .val { font-size: clamp(26px, 2.6vw, 38px); font-weight: 800; letter-spacing: -.02em; margin: 6px 0 4px; }
 .sx-bigkpi .sx-kpi .lab span { font-size: 14px; font-weight: 700; }
@@ -616,6 +636,10 @@ body:has(.sx[data-sx-theme=light]){background:#f6f7f9}
         <button role="tab" data-tab="pnl" id="tab-pnl">손익</button>
         <button role="tab" data-tab="b2b" id="tab-b2b">B2B 실매입 · 재고</button>
       </div>
+    </div>
+    <div class="sx-side-sec">
+      <span class="sx-side-lab">채널 (체크로 켜고 끄기 · 모든 탭 적용)</span>
+      <div class="sx-sidech" id="sideCh"></div>
     </div>
     <div class="sx-side-sec">
       <span class="sx-side-lab">화면 모드</span>
@@ -938,7 +962,13 @@ body:has(.sx[data-sx-theme=light]){background:#f6f7f9}
 
   <!-- 4. 광고·마케팅 -->
   <section id="summary" data-page="summary" hidden>
-    <div class="sx-card wide sx-sumhead">
+    <div class="sx-card wide" id="sumCore">
+      <div class="sx-sd-head"><div><h3 id="scTitle">매출 · 공헌이익 · 마케팅비 추이</h3><p class="note" id="scNote">—</p></div></div>
+      <div class="sx-avgwarn" id="scAvg" hidden></div><div class="sx-chart" id="scChart"></div><div class="sx-legend" id="scLeg"></div>
+      <details class="sx-asmore"><summary>일자별 숫자 표 보기 (날짜·매출 누르면 판매 제품 · 마케팅비 누르면 광고 상세)</summary><div class="sx-table-wrap" style="margin-top:6px"><table id="scTbl"><thead></thead><tbody></tbody></table></div></details>
+    </div>
+    <div class="sx-kpis sx-bigkpi sx-kpimini" id="sumKpis" style="margin-top:var(--cds-gap-md)" data-source="sku_day"></div>
+    <div class="sx-card wide sx-sumhead" style="margin-top:var(--cds-gap-md)">
       <div class="row" style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
         <div><h3 id="sumTitle">기간 현황</h3><p class="sx-sub" id="sumSub">—</p></div>
         <div class="sx-dpick" style="margin:0"><span style="font-size:11px;color:var(--sx-muted)">빠른 선택 (위 조회 기간이 바뀜)</span><button type="button" class="q" data-sq="7">최근 7일</button><button type="button" class="q" data-sq="14">최근 14일</button><button type="button" class="q" data-sq="30">최근 30일</button><button type="button" class="q" data-sq="m">이번 달</button></div>
@@ -946,15 +976,9 @@ body:has(.sx[data-sx-theme=light]){background:#f6f7f9}
       </div>
       <ul class="sx-sumtxt" id="sumTxt" data-source="sku_day" hidden></ul>
     </div>
-    <div class="sx-kpis sx-bigkpi" id="sumKpis" style="margin-top:var(--cds-gap-md)" data-source="sku_day"></div>
-    <div class="sx-card wide" id="sumCore" style="margin-top:var(--cds-gap-md)">
-      <div class="sx-sd-head"><div><h3 id="scTitle">매출 · 공헌이익 · 마케팅비 추이</h3><p class="note" id="scNote">—</p></div></div>
-      <div class="sx-avgwarn" id="scAvg" hidden></div><div class="sx-chart" id="scChart"></div><div class="sx-legend" id="scLeg"></div>
-      <details class="sx-asmore"><summary>일자별 숫자 표 보기 (날짜·매출 누르면 판매 제품 · 마케팅비 누르면 광고 상세)</summary><div class="sx-table-wrap" style="margin-top:6px"><table id="scTbl"><thead></thead><tbody></tbody></table></div></details>
-    </div>
     <div class="sx-card wide" id="sumChCard" style="margin-top:var(--cds-gap-md)">
-      <div class="sx-sd-head"><div><h3 id="scChTitle">채널별 요약</h3><p class="note">체크를 끄면 그 채널을 숨깁니다 (모든 탭에 같이 적용) · 팀 이름을 누르면 그 팀만 · 직전 = 같은 길이 직전 기간</p></div></div>
-      <div class="sx-chk" id="scChk"></div>
+      <div class="sx-sd-head"><div><h3 id="scChTitle">채널별 요약</h3><p class="note">채널 켜고 끄기는 왼쪽 메뉴 '채널'에서 (모든 탭에 같이 적용) · 직전 = 같은 길이 직전 기간</p></div></div>
+      <div class="sx-chk" id="scChk" hidden></div>
       <div class="sx-table-wrap" style="margin-top:10px"><table id="scChTbl"><thead></thead><tbody></tbody></table></div>
     </div>
     <details class="sx-more" id="sumMore">
@@ -3240,6 +3264,31 @@ addEventListener('resize',()=>{clearTimeout(window.__rt);window.__rt=setTimeout(
       const st = td(o.gap ? '추가 기입 필요' : o.info ? '확인' : '정상', 'l'); st.className = 'l ' + (o.gap ? 'sx-ckbad' : o.info ? 'sx-ckinfo' : 'sx-ckok');
       td(o.kind, 'l'); const c0 = td(o.ch, 'l'); c0.style.borderLeft = `3px solid ${chColor(o.ch)}`; td(o.media, 'l'); td(fd(o.last)); td(fd(o.need)); td(o.gap ? `${o.gap}일` : '—'); const t2 = td(o.todo, 'l'); if (o.gap) t2.style.fontWeight = 600; tb.append(tr); }
   }
+  // 왼쪽 메뉴 채널 선택: 팀별 접기 + 전체 선택/해제/초기화
+  const sideOpen = new Set();
+  function paintSideCh() {
+    const box = document.getElementById('sideCh'); if (!box || !D || !D.ok) return; box.replaceChildren();
+    const cs = chans(), setCh = (next) => set({ ch: next.length === CH.length ? [] : next.length ? next : ['__none__'] });
+    const top = document.createElement('div'); top.className = 'act';
+    for (const [tx, fn, tip] of [['전체 선택', () => setCh(CH), '모든 채널 켜기'], ['전체 해제', () => setCh([]), '모든 채널 끄기'], ['초기화', () => set({ ch: [] }), '처음 상태(전체 채널)로']]) { const b = document.createElement('button'); b.type = 'button'; b.textContent = tx; b.title = tip; b.addEventListener('click', fn); top.append(b); }
+    box.append(top);
+    const sum = document.createElement('p'); sum.className = 'cnt'; sum.textContent = `선택 ${cs.length} / 전체 ${CH.length}개`; box.append(sum);
+    const tot = d3.rollup(D.daily, (v) => d3.sum(v, (r) => r.sales || 0), (r) => r.channel);
+    for (const tk of ['ON', 'OFF']) {
+      const L = grpList(tk); if (!L.length) continue; const n = L.filter((c) => cs.includes(c)).length;
+      const dt = document.createElement('details'); dt.open = sideOpen.has(tk); dt.addEventListener('toggle', () => { dt.open ? sideOpen.add(tk) : sideOpen.delete(tk); });
+      const sm = document.createElement('summary'); const cb0 = document.createElement('input'); cb0.type = 'checkbox'; cb0.checked = n === L.length; cb0.indeterminate = n > 0 && n < L.length; cb0.title = '이 팀 전체 켜기/끄기';
+      cb0.addEventListener('click', (e) => { e.stopPropagation(); }); cb0.addEventListener('change', () => { const cur = new Set(cs); cb0.checked ? L.forEach((c) => cur.add(c)) : L.forEach((c) => cur.delete(c)); setCh(CH.filter((c) => cur.has(c))); });
+      const t = document.createElement('b'); t.textContent = TEAM_LAB[tk]; const k = document.createElement('small'); k.textContent = `${n}/${L.length} ▾`;
+      sm.append(cb0, t, k); dt.append(sm);
+      const ul = document.createElement('div'); ul.className = 'ls';
+      const only = document.createElement('button'); only.type = 'button'; only.className = 'only'; only.textContent = `${TEAM_LAB[tk]}만 보기`; only.addEventListener('click', () => setCh(L)); ul.append(only);
+      for (const c of L.slice().sort((x, y) => (tot.get(y) || 0) - (tot.get(x) || 0))) { const lb = document.createElement('label'); const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = cs.includes(c); if (!cb.checked) lb.className = 'off';
+        cb.addEventListener('change', () => setCh(cb.checked ? CH.filter((x) => cs.includes(x) || x === c) : cs.filter((x) => x !== c)));
+        const dot = document.createElement('i'); dot.style.background = chColor(c); const nm = document.createElement('span'); nm.textContent = c; nm.title = c; lb.append(cb, dot, nm); ul.append(lb); }
+      dt.append(ul); box.append(dt);
+    }
+  }
   function openCheck() { const md = document.getElementById('ckModal'); md.hidden = false; md.scrollTop = 0; document.documentElement.style.overflow = 'hidden'; paintCheck(); }
   const closeCheck = () => { document.getElementById('ckModal').hidden = true; if (!pickSku && !listCtx && !adCtx && !stOpen) document.documentElement.style.overflow = ''; };
   // ── 올리브영 지점별 팝업 ──
@@ -3378,8 +3427,8 @@ addEventListener('resize',()=>{clearTimeout(window.__rt);window.__rt=setTimeout(
     const b1 = t1.querySelector('tbody'); b1.replaceChildren();
     PS.forEach((p, i) => { const tr = document.createElement('tr'); const dc = cell(tr, p.full, 'l'); if (AS[i] > .001) { const em = document.createElement('small'); em.className = 'sx-avgtag'; em.textContent = AS[i] > .999 ? '월평균' : `월평균 ${d3.format('.0%')(AS[i])}`; em.title = `${avgCh.join('·')}: 월 합계 ÷ 일수 균등 배분`; dc.append(em); } cell(tr, won(S[i])); const r = i && !allAvg ? rr(S[i], S[i - 1]) : null; cell(tr, r == null ? (allAvg && i ? '월평균 (비교 X)' : '—') : sgnPct(r), r == null ? '' : r >= 0 ? 'up' : 'down'); cell(tr, won(F[i], 'profit'), F[i] < 0 ? 'down' : ''); cell(tr, pct(M[i])); cell(tr, won(A[i])); cell(tr, A[i] ? roasP(S[i] / A[i]) : '—'); cell(tr, S[i] ? pct(A[i] / S[i]) : '—'); sumClick(tr, p, chs); b1.append(tr); });
     { const tr = document.createElement('tr'); tr.className = 'tot'; cell(tr, '합계', 'l'); cell(tr, won(C.sl)); cell(tr, Pv ? `${PSp.lab} 대비 ${sgnPct(rr(C.sl, Pv.sl))}` : '—'); cell(tr, won(C.pf, 'profit')); cell(tr, pct(C.m)); cell(tr, won(C.ad)); cell(tr, C.roas ? roasP(C.roas) : '—'); cell(tr, C.sl ? pct(C.ad / C.sl) : '—'); sumClick(tr, { a, z, full: perLab }, chs); b1.append(tr); }
-    // 채널 체크박스 (팀별)
-    const box = document.getElementById('scChk'); box.replaceChildren();
+    // 채널 체크박스는 왼쪽 메뉴(paintSideCh)로 옮김
+    const box = document.createElement('div');
     const setCh = (next) => set({ ch: next.length === CH.length ? [] : next.length ? next : ['__none__'] });
     for (const tk of ['ON', 'OFF']) {
       const L = grpList(tk); if (!L.length) continue;
@@ -4200,6 +4249,7 @@ addEventListener('resize',()=>{clearTimeout(window.__rt);window.__rt=setTimeout(
     drawTake(document.getElementById('take'));
     if (stOpen) paintStores();
     paintCheck();
+    paintSideCh();
     if (tab === 'overview') { drawKpis(); drawAdStrip(); drawTime(); drawMix(); drawCmp(); drawHeat(); drawCategory(); drawWeekday(); }
     if (tab === 'product') { drawProduct(); drawSkuDetail(); }
     paintLens(tab);
