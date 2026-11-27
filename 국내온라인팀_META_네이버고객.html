@@ -1,5 +1,5 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>국내온라인팀 · META / 네이버 고객</title><meta name="built" content="2026-11-27 13:50"><style>
+<title>국내온라인팀 · META / 네이버 고객</title><meta name="built" content="2026-11-27 14:17"><style>
 :root { --color-fg:#1b2130; --color-fg-muted:#667085; --color-bg:#f6f7f9; --color-panel:#ffffff; --color-border-line:#e3e6ec; --color-ok:#1f9d61; --color-warn:#b26b00; --color-bad:#d9483b;
  --font-anthropic-sans: 'Pretendard', -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', 'Segoe UI', sans-serif; --font-anthropic-serif: Georgia, 'Noto Serif KR', 'Nanum Myeongjo', serif;
  --cds-font-size-caption:12px; --cds-font-size-body:14px; --cds-font-size-heading:17px; --cds-font-size-title:26px; --cds-font-weight-medium:600;
@@ -261,6 +261,26 @@ html, body { margin:0; background:var(--color-bg); color:var(--color-fg); font-f
 #dash-root .pbtn .pd { font-size: 11.5px; color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
 #dash-root .pbtn.on .pd { color: var(--color-fg); font-weight: 700; }
 #dash-root .selnote { margin: 0; font-size: 12.5px; font-weight: 700; padding: 6px 12px; border-radius: 10px; background: var(--soft); width: fit-content; }
+#dash-root .topsum { border: 1.5px solid color-mix(in srgb, var(--c-hot) 50%, var(--color-border-line)); }
+#dash-root table.paytbl td, #dash-root table.paytbl th { white-space: nowrap; padding: 8px 12px; font-size: 13px; }
+#dash-root table.paytbl td.pay { font-size: 15px; font-weight: 900; }
+#dash-root table.paytbl tr.cur td { background: color-mix(in srgb, var(--c-hot) 10%, transparent); }
+#dash-root table.paytbl tr.tot td, #dash-root table.chx tr.tot td { border-top: 2px solid var(--color-fg-muted); font-weight: 800; background: var(--soft); }
+#dash-root table.paytbl tr:hover td { background: color-mix(in srgb, var(--c-hot) 6%, transparent); }
+#dash-root table.chx td { vertical-align: top; padding: 7px 10px; }
+#dash-root table.chx .cv { font-size: 14px; font-weight: 900; }
+#dash-root table.chx .cs { font-size: 11px; color: var(--color-fg-muted); white-space: nowrap; }
+#dash-root table.chx .cs.up { color: var(--color-ok); } #dash-root table.chx .cs.down { color: var(--color-bad); }
+#dash-root table.chx tr.meta td { color: var(--color-bad); font-size: 12px; }
+#dash-root ul.chsum { margin: 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 7px; font-size: 13px; line-height: 1.6; }
+#dash-root ul.chsum li.concl { list-style: none; margin-left: -1.1rem; margin-top: 4px; padding: 8px 10px; border-radius: 10px; background: color-mix(in srgb, var(--c-hot) 12%, transparent); }
+#dash-root .basis { display: flex; flex-wrap: wrap; gap: 8px; }
+#dash-root .bchip { font-size: 12.5px; padding: 5px 12px; border-radius: 999px; background: var(--soft); border: 1px solid var(--color-border-line); }
+#dash-root .bchip b { color: var(--c-hot); margin-right: 4px; }
+#dash-root .sumgrid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 12px; }
+@media (max-width: 1300px) { #dash-root .sumgrid { grid-template-columns: 1fr; } }
+#dash-root .sumgrid .tbl { max-height: none; overflow-x: auto; }
+#dash-root table.paytbl tr.proj td { font-style: italic; color: var(--color-fg-muted); } #dash-root table.paytbl tr.proj td.pay { color: var(--c-blue); }
 #dash-root .story { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 #dash-root .story .st { position: relative; border-radius: 14px; padding: 14px 16px 14px 18px; background: var(--soft); border-left: 4px solid var(--c-blue); display: flex; flex-direction: column; gap: 6px; }
 #dash-root .story .st.n { border-left-color: var(--c-naver); } #dash-root .story .st.t { border-left-color: var(--c-hot); background: color-mix(in srgb, var(--c-hot) 10%, transparent); }
@@ -325,7 +345,7 @@ html, body { margin:0; background:var(--color-bg); color:var(--color-fg); font-f
   <header class="sec">
     <h1>국내온라인팀 · META / 네이버 고객</h1>
     
-    <p class="note">기간 2026-01-01 ~ 11-23 (주문 없는 날: 10/28) · 업데이트 2026-11-27 13:50 · 재구매 = 서로 다른 날 2회 이상 구매</p>
+    <p class="note">기간 2026-01-01 ~ 11-23 (주문 없는 날: 10/28) · 업데이트 2026-11-27 14:17 · 재구매 = 서로 다른 날 2회 이상 구매</p>
   </header>
 
 
@@ -345,6 +365,7 @@ html, body { margin:0; background:var(--color-bg); color:var(--color-fg); font-f
 
   <!-- 핵심 요약 -->
   <section class="sec" id="ts">
+    <div class="card topsum" data-draw="prWrap" data-source="prod_info"><div data-draw="topSum" data-source="prod_settle prod_platform"></div></div>
     <div class="mkhead" data-draw="prWrap" data-source="prod_info"><div data-draw="mkHead" data-source="prod_month prod_settle"></div></div>
     <div class="card hero-card" data-draw="prWrap" data-source="prod_info">
       <div class="sec-h"><div><div class="eyebrow">결론</div><h2 class="sec-t">META 네이버 랜딩 보고 — 매출은 얼마나 늘었고, 늘어난 공헌이익이 META 비용을 얼마나 회수했나</h2>
@@ -411,6 +432,9 @@ html, body { margin:0; background:var(--color-bg); color:var(--color-fg); font-f
     </div>
     <div class="card">
       <div class="sec-h"><div><div class="eyebrow">네이버 고객</div><h2 class="sec-t">META 이후 네이버로 들어온 고객은 누구이고, 다시 사는가</h2><p class="note">스마트스토어 주문 기준 · 신규 = 데이터 기간(1/1~) 첫 구매 · 재방문 = 그 이전에 산 적 있는 고객</p></div></div>
+      <p class="take" data-draw="ncTake" data-source="ltv month_ltv monthly">—</p>
+      <div class="kpis" data-draw="ncLtv" data-source="ltv month_ltv monthly"></div>
+      <div class="panel"><h3>네이버 고객 월별 변화</h3><div class="tbl" style="max-height:none"><table class="t nctbl"><thead><tr><th>월</th><th>구매 고객</th><th>신규</th><th>재구매 고객</th><th>재구매율</th><th>네이버 매출</th><th>재구매 매출</th><th>재구매 매출 비중</th><th>평균 재구매 주기</th><th>누적 재구매 고객</th><th>재구매 고객 LTV</th></tr></thead><tbody data-draw="ncTable" data-source="monthly month_ltv"></tbody></table></div></div>
       <div class="kpis" data-draw="ncKpis" data-source="naver_cohort"></div>
       <div class="grid2 g-wide">
         <div class="panel"><h3>일별 구매 고객 (신규 / 재방문)</h3><div class="legend"><span><i class="sw" style="background:var(--c-naver)"></i>신규</span><span><i class="sw" style="background:var(--c-blue)"></i>재방문</span><span><i class="sw" style="background:var(--c-hot)"></i>신규 7일 평균</span></div><div class="chart" data-draw="ncDaily" data-source="naver_cust_daily"></div></div>
@@ -2056,7 +2080,7 @@ dash.calc('chk_sum', {
     const { hi } = dRange(); const curCM = CM();
     const pbtn = (v, title, dates, stv, df, dt) => { const b = el$('button', 'pbtn' + (curCM === v ? ' on' : '') + (stv ? ' ' + stv.k : '')); b.type = 'button';
       const t = el$('span', 'pt'); t.append(title); if (stv) t.append(el$('span', 'stb ' + stv.k, stv.k === 'act' ? '정산 확정' : stv.k === 'run' ? '진행 중' : '실집행')); b.append(t, el$('span', 'pd', dates));
-      b.onclick = () => dash.setParams({ cm: v === 'ALL' ? null : v, ...(v !== 'ALL' ? { sm: v } : {}), df, dt }); per.append(b); };
+      b.onclick = () => dash.setParams({ cm: v, ...(v !== 'ALL' ? { sm: v } : {}), df, dt }); per.append(b); };
     pbtn('ALL', 'META 전체 기간', `08/22 ~ ${md(hi).replace('/', '/')}`, null, '2026-08-22', hi);
     settleMonths().forEach((m) => { const bl = settleBill(m); if (!bl) return; const y = +m.slice(0, 4), mo = +m.slice(5, 7); const sy = mo === 1 ? y - 1 : y, sm_ = mo === 1 ? 12 : mo - 1;
       const df = iso(sy, sm_, 22), dt0 = iso(y, mo, 21), dt = dt0 > hi ? hi : dt0; pbtn(m, `${ml(m)} 정산`, `${md(df)} ~ ${md(dt0)}` + (dt0 > hi ? ` (~${md(hi)})` : ''), billStatus(bl), df, dt); });
@@ -2092,7 +2116,7 @@ dash.calc('chk_sum', {
     return { by, T }; };
   const g = (a, b) => a ? b / a - 1 : null;
   dash.draw('cNote', (el) => { const ps = info().filter((i) => i.type === 'meta');
-    el.textContent = `META 집행 제품만 (${ps.map((i) => i.product).join(' · ')}) · 올리브영 제외 (자료에 없음) · META 광고비(VAT)·마크업 ${Math.round(MK() * 100)}%는 전부 네이버 비용 · ${INC() ? '인앱 포함' : '인앱 제외'}`; });
+    el.textContent = `META 집행 제품 · 올리브영 제외 · 공헌이익 셀인 기준(원가 · 배송비 차감) · META 비용 네이버 처리 · ${INC() ? '인앱 포함' : '인앱 제외'}`; });
   // ---------- 정산 청구 (광고관리자 입력값 고정) · 회수율
   const VATR = () => (((RP.rows('prod_meta') || [{}])[0]) || {}).vat || 0.1;
   const BILLS = () => RP.rows('meta_billing') || [];
@@ -2124,8 +2148,7 @@ dash.calc('chk_sum', {
     card('r', '① 매출', '매출은 확실히 늘었다', `${F.won(T.rev_pre)} → ${F.won(T.rev_post)} (${pct1(g(T.rev_pre, T.rev_post))})`, false, [
       ['수량 ', B(pct1(g(T.qty_pre, T.qty_post)), 'up'), ' · META 전과 같은 일수 비교'],
       ['네이버(랜딩) ', B(`${F.won(nv.rev_pre)} → ${F.won(nv.rev_post)} (${pct1(g(nv.rev_pre, nv.rev_post))})`)],
-      ['채널별 늘어난 매출 ', ...GORD.filter((k) => by[k]).map((k) => [k, by[k].rev_post - by[k].rev_pre]).sort((a, b) => b[1] - a[1]).flatMap(([k, v], i) => [i ? ' · ' : '', `${k} `, B(sgnW(v), C(v))])],
-      ['META 집행 제품만 · 올리브영 제외']]);
+      ['채널별 늘어난 매출 ', ...GORD.filter((k) => by[k]).map((k) => [k, by[k].rev_post - by[k].rev_pre]).sort((a, b) => b[1] - a[1]).flatMap(([k, v], i) => [i ? ' · ' : '', `${k} `, B(sgnW(v), C(v))])]]);
     card('n', '② 네이버 공헌이익', '네이버가 평소보다 더 번 이익 vs META에 쓴 돈', `더 번 이익 ${sgnW(R.nv)} · META 비용 ${F.won(R.cost)}`, false, [
       ['네이버 광고 전 공헌이익 ', B(sgnW(R.nv), C(R.nv)), ' 증가'],
       ['META 총비용 ', B(F.won(R.cost)), ` (광고비 ${F.won(R.meta)} + 마크업 ${F.won(R.mk)})는 전부 네이버 처리`],
@@ -2215,10 +2238,10 @@ dash.calc('chk_sum', {
     const inc = act - base, rate = cost ? inc / cost : null;
     const t = el$('div', 'xt'); t.append('회수율이란? '); const sp = el$('span', 'note', '· 아래 숫자 = ' + lab0); t.append(sp); el.append(t);
     const def = el$('div', 'xdef');
-    const d1 = el$('p', 'x1'); d1.append(el$('b', '', '회수율'), ' = META에 쓴 돈 1원이 이익으로 얼마나 돌아왔는지 보는 비율입니다. ', el$('b', '', '100%면 본전'), ', 100%보다 크면 META가 이익을 더 남겼고, 작으면 쓴 돈 일부를 못 돌려받은 것입니다.');
+    const d1 = el$('p', 'x1'); d1.append(el$('b', '', '회수율'), ' = META에 쓴 돈이 이익으로 돌아온 비율 · ', el$('b', '', '100% = 본전'), ' · 넘으면 이익 · 못 미치면 손실');
     const d2 = el$('p', 'x2'); d2.append(el$('b', '', '계산식'), '  회수율 = ( 이 기간 실제 공헌이익 − 평소 공헌이익 ) ÷ META에 쓴 돈 × 100');
-    const d3_ = el$('p', 'x3'); d3_.append('• ', el$('b', '', '평소 공헌이익'), ' = META 시작 전 하루 평균 공헌이익 × 이 기간 일수 ("META를 안 했으면 벌었을 이익")   • ', el$('b', '', '공헌이익'), ' = 광고비를 빼기 전 공헌이익 (모든 채널 · 모든 구매)   • ', el$('b', '', 'META에 쓴 돈'), ' = 광고비(VAT 포함) + 대행 마크업 15%');
-    const d4 = el$('p', 'x3'); d4.append('• 광고 클릭으로 바로 산 구매만 세는 ', el$('b', '', '광고관리자 ROAS와 다릅니다'), '. 나중에 검색해서 산 구매, 쿠팡 · 카카오 등 다른 채널 구매까지 포함한 "늘어난 이익 전체"로 봅니다. 다음 달 재구매는 들어가지 않습니다.');
+    const d3_ = el$('p', 'x3'); d3_.append(el$('b', '', '평소'), ' = META 전 하루 평균 × 일수 · ', el$('b', '', '공헌이익'), ' = 셀인 기준, 원가 · 배송비 차감 (광고 전) · ', el$('b', '', 'META에 쓴 돈'), ' = 광고비(VAT) + 마크업 15%');
+    const d4 = el$('p', 'x3'); d4.append('클릭 구매만 보는 ROAS와 달리 ', el$('b', '', '모든 채널 · 모든 구매'), ' 포함');
     def.append(d1, d2, d3_, d4); el.append(def);
     const f = el$('div', 'xflow'); const box = (cls, l, v, d) => { const b = el$('div', 'xb ' + cls); b.append(el$('span', 'l', l), el$('span', 'v', v), el$('span', 'd', d)); f.append(b); }; const op = (x) => f.append(el$('span', 'xo', x));
     box('', '① 실제 번 이익', F.won(act), '이 기간 광고 전 공헌이익 (모든 채널 · 모든 구매)'); op('−');
@@ -2228,10 +2251,10 @@ dash.calc('chk_sum', {
     box('cost', all ? '④ META에 쓴 돈' : '④ META에 쓴 돈 · 3개 제품 몫', F.won(cost), `광고비(VAT) ${F.won(meta)} + 마크업 ${F.won(mk)}` + (bl && bl.billed ? ` · 계정 전체 정산 확정 ${F.won(bl.total)}(마크업 ${F.won(bl.markup)}) 중 ${F.pct(cost / bl.total)}` : bl ? ' · 이 정산월 실집행 금액' : '')); op('=');
     box('rate', '회수율', F.pct(rate), rate >= 1 ? `100% 넘음 → 쓴 돈보다 ${F.won(inc - cost)} 더 벌었음` : `100% 미만 → 쓴 돈 중 ${F.won(cost - inc)} 못 돌려받음`);
     el.append(f);
-    if (bl && bl.billed && bl.total - cost > 1) el.append(el$('p', 'note', `맨 위 정산 금액(${F.won(bl.total)} · 마크업 ${F.won(bl.markup)})은 계정 전체 · 여기 ④는 그중 다운펌 · 팁스케치 · 트리플립밤 몫(${F.won(cost)} · 마크업 ${F.won(mk)})만 · 나머지 ${F.won(bl.total - cost)}은 이익 자료가 없는 선스틱 · 루트샴푸 등. 계정 전체 정산으로 나누면 회수율 ${F.pct(inc / bl.total)}`));
-    el.append(el$('p', 'note', '주의: 계절 · 2개 구성 같은 구성 변경 · 다른 프로모션 효과도 "더 번 이익"에 섞여 있어 추정치입니다.')); });
+    if (bl && bl.billed && bl.total - cost > 1) el.append(el$('p', 'note', `④ = 정산 확정 ${F.won(bl.total)} 중 3개 제품 몫 · 계정 전체로 나누면 회수율 ${F.pct(inc / bl.total)}`));
+    el.append(el$('p', 'note', '추정치 (계절 · 구성 변경 효과 포함)')); });
   // ---------- 보고 기간: META 전체 기간 | 정산월 (월 클릭 시 결론 · 지표 · 차트 · 인사이트 모두 그 정산월 기준)
-  const CM = () => { const v = P().cm; return v && settleMonths().includes(v) ? v : 'ALL'; };
+  const CM = () => { const v = P().cm; const ms = settleMonths(); if (v === 'ALL') return 'ALL'; if (v && ms.includes(v)) return v; const b = ms.map(settleBill).filter((r) => r && r.billed).slice(-1)[0]; return b ? b.m : 'ALL'; };
   const baseD = () => { const o = {}; info().forEach((i) => { const mm = /\((\d+)일\)/.exec(i.platform_note || ''); if (!mm) return; const R = (RP.rows('prod_platform') || []).filter((r) => r.product === i.product && !r.total); const d = +mm[1];
     o[i.product] = { rev: d3.sum(R, (r) => r.rev_pre) / d, qty: d3.sum(R, (r) => r.qty_pre) / d, cp: d3.sum(R, (r) => r.cpp_pre - (INC() ? r.inapp_pre : 0) - (r.mkt_pre || 0)) / d }; }); return o; };
   const periodProd = (m) => { const B = baseD(); const S = (RP.rows('prod_settle') || []).filter((r) => r.month === m && B[r.product]);
@@ -2240,14 +2263,17 @@ dash.calc('chk_sum', {
     const T = { p: '전체' }; ['rev0', 'rev', 'qty0', 'qty', 'cp0', 'cp', 'inc', 'meta', 'mk', 'cost'].forEach((k) => { T[k] = d3.sum(P_, (x) => x[k]); }); T.rate = T.cost ? T.inc / T.cost : null; T.net = T.inc - T.cost;
     const t0 = S[0] || {}; T.period = t0.period; T.days = d3.max(S, (r) => r.days); T.full = d3.max(S, (r) => r.full); T.to = d3.max(S, (r) => r.to); return { P: P_, T }; };
   const mLab = (m) => { const b = settleBill(m); const st = b && billStatus(b); return `${ml(m)} 정산`; };
-  dash.draw('cMonthSeg', (el) => { el.replaceChildren(); const cur = CM(); const add = (v, t, stv) => { const b = el$('button'); b.append(t); if (stv) b.append(el$('span', 'sb ' + stv.k, stv.k === 'act' ? '정산 확정' : stv.k === 'run' ? '진행 중' : '실집행')); b.setAttribute('aria-pressed', String(cur === v)); b.onclick = () => dash.setParams({ cm: v === 'ALL' ? null : v, ...(v !== 'ALL' ? { sm: v } : {}) }); el.append(b); };
+  dash.draw('cMonthSeg', (el) => { el.replaceChildren(); const cur = CM(); const add = (v, t, stv) => { const b = el$('button'); b.append(t); if (stv) b.append(el$('span', 'sb ' + stv.k, stv.k === 'act' ? '정산 확정' : stv.k === 'run' ? '진행 중' : '실집행')); b.setAttribute('aria-pressed', String(cur === v)); b.onclick = () => dash.setParams({ cm: v, ...(v !== 'ALL' ? { sm: v } : {}) }); el.append(b); };
     add('ALL', 'META 전체 기간'); settleMonths().forEach((m) => { const b = settleBill(m); if (!b) return; add(m, `${ml(m)} 정산`, billStatus(b)); }); });
-  dash.draw('cMonthNote', (el) => { const m = CM(); if (m === 'ALL') { el.textContent = '보고 기간: META 전체 기간 · 제품마다 META 시작 전 · 후 같은 일수 비교 · 채널별로 표시 (위 고정 막대에서 정산월 선택)'; return; } const { T } = periodProd(m);
-    el.textContent = `보고 기간: ${ml(m)} 정산 ${T.period}${T.days < T.full ? ` (~${T.to}, ${T.days}/${T.full}일)` : ''} · 기준 = META 전 일평균 × 일수 · 다운펌 · 팁스케치 · 트리플립밤 · 월별 채널 자료가 없어 차트는 제품별`; });
+  dash.draw('cMonthNote', (el) => { const m = CM(); if (m === 'ALL') { el.textContent = '보고 기간: META 전체 기간 (META 전 · 후 같은 일수)'; return; } const { T } = periodProd(m);
+    el.textContent = `보고 기간: ${ml(m)} 정산 ${T.period}${T.days < T.full ? ` (~${T.to})` : ''} · 평소 대비 · 차트는 제품별`; });
   const prevMonth = (m) => { const ms = settleMonths(); const i = ms.indexOf(m); return i > 0 ? ms[i - 1] : null; };
-  const insight = (T, prev, P_) => { const best = P_.filter((x) => x.cost > 0).sort((a, b) => (b.rate || -9) - (a.rate || -9)); const hi = best[0], lo = best[best.length - 1];
+  const PLAN12 = ['12월: 메인 프로모션 · 가격 메리트 · 다구성에 집중 → 회수율 100% 이상 유지', '광고비는 타이트하게 · 신규 광고 소재는 제작하지 않고 효율 낮은 소재 OFF'];
+  const insight = (T, prev, P_, m) => { const best = P_.filter((x) => x.cost > 0).sort((a, b) => (b.rate || -9) - (a.rate || -9)); const hi = best[0], lo = best[best.length - 1];
     const cap = T.inc > 0 ? T.inc : 0; const out = [];
-    if (T.rate >= 1) out.push(`META가 비용(${F.won(T.cost)})보다 공헌이익(${F.won(T.inc)})을 더 만든 달 → 지금 예산 수준 유지, ${hi ? hi.p + ' 중심으로' : ''} 소폭 증액 검토`);
+    const lastB = settleMonths().map(settleBill).filter((r) => r && r.billed).slice(-1)[0];
+    if (lastB && m === lastB.m) { out.push(`회수율 ${F.pct(T.rate)} — 처음으로 META 비용보다 더 번 이익이 큼`); PLAN12.forEach((x) => out.push(x)); if (hi && lo && hi !== lo) out.push(`제품: ${hi.p} 회수 ${F.pct(hi.rate)} 최고 · ${lo.p} ${F.pct(lo.rate)} 최저`); return out; }
+    if (T.rate >= 1) out.push(`META가 비용(${F.won(T.cost)})보다 공헌이익(${F.won(T.inc)})을 더 만든 달`);
     else if (prev && prev.rate != null && T.rate > prev.rate) out.push(`회수율 ${F.pct(prev.rate)} → ${F.pct(T.rate)}로 개선 중이지만 아직 손익분기 아래 → 비용을 ${F.won(T.cost - cap)} 더 줄이거나 같은 비용으로 공헌이익을 더 내야 함`);
     else out.push(`비용 대비 회수 부족(${F.pct(T.rate)}) → 감액 · 효율 제품 집중. 이 달 기준 META 총비용 손익분기 한도 ≈ ${F.won(cap)}`);
     if (hi && lo && hi !== lo) out.push(`제품: ${hi.p} 회수 ${F.pct(hi.rate)}로 가장 효율 · ${lo.p} ${F.pct(lo.rate)}로 가장 낮음`);
@@ -2261,8 +2287,7 @@ dash.calc('chk_sum', {
       ['수량 ', B(`${F.int(T.qty0)} → ${F.int(T.qty)} (${pct1(g(T.qty0, T.qty))})`, C(T.qty - T.qty0))],
       ['제품별 늘어난 매출 ', ...topR.flatMap((x, i) => [i ? ' · ' : '', `${x.p} `, B(sgnW(x.rev - x.rev0), C(x.rev - x.rev0))])],
       ...(pv ? [[`직전 ${ml(pm)} 정산 대비 일평균 매출 `, B(pct1(g(pv.rev / pv.days, T.rev / T.days)), C(T.rev / T.days - pv.rev / pv.days))]] : []),
-      (() => { const A = platAgg(metaProds()).by; return ['어느 채널에서? (META 전체 기간 기준 · 월별 채널 자료 없음) ', ...GORD.filter((k) => A[k]).map((k) => [k, A[k].rev_post - A[k].rev_pre]).sort((a, b) => b[1] - a[1]).flatMap(([k, v], i) => [i ? ' · ' : '', `${k} `, B(sgnW(v), C(v))])]; })(),
-      ['META 집행 제품만 · 올리브영 제외']]);
+      (() => { const A = platAgg(metaProds()).by; return ['채널 (전체 기간) ', ...GORD.filter((k) => A[k]).map((k) => [k, A[k].rev_post - A[k].rev_pre]).sort((a, b) => b[1] - a[1]).flatMap(([k, v], i) => [i ? ' · ' : '', `${k} `, B(sgnW(v), C(v))])]; })()]);
     card('n', `② 공헌이익 · ${ml(m)} 정산`, '평소보다 더 번 이익 vs META에 쓴 돈', `더 번 이익 ${sgnW(T.inc)} · META 비용 ${F.won(T.cost)}`, T.inc < 0, [
       ['제품별 더 번 이익 ', ...P_.flatMap((x, i) => [i ? ' · ' : '', `${x.p} `, B(sgnW(x.inc), C(x.inc))])],
       ['META 비용 (3개 제품 몫) ', B(F.won(T.cost)), ` = 광고비 ${F.won(T.meta)} + 마크업 ${F.won(T.mk)}`],
@@ -2270,7 +2295,7 @@ dash.calc('chk_sum', {
     card('t', `③ 회수 · 방향 · ${ml(m)} 정산`, '회수율 = 더 번 이익 ÷ META 비용 (100% 넘으면 이익)', `회수율 ${F.pct(T.rate)} · 남은 이익 ${sgnW(T.net)}`, T.net < 0, [
       ...(pv ? [[`직전 ${ml(pm)} 정산 `, B(F.pct(pv.rate)), ' → 이번 ', B(F.pct(T.rate), C(T.rate - pv.rate)), ` (남은 이익 ${sgnW(pv.net)} → ${sgnW(T.net)})`]] : []),
       ['META 1원당 늘어난 매출 ', B(d3.format('.2f')((T.rev - T.rev0) / T.cost) + '원'), pv ? ` (직전 ${d3.format('.2f')((pv.rev - pv.rev0) / pv.cost)}원)` : ''],
-      ...(bill && bill.total - T.cost > 1 ? [['보수적으로 계정 전체 정산 ', B(F.won(bill.total)), '로 나누면 회수율 ', B(F.pct(T.inc / bill.total), T.inc >= bill.total ? 'up' : 'down')]] : [])], insight(T, pv, P_)); });
+      ...(bill && bill.total - T.cost > 1 ? [['보수적으로 계정 전체 정산 ', B(F.won(bill.total)), '로 나누면 회수율 ', B(F.pct(T.inc / bill.total), T.inc >= bill.total ? 'up' : 'down')]] : [])], insight(T, pv, P_, m)); });
   dash.draw('cRevKpis', (el) => { if (CM() === 'ALL') return _cRevKpis_all(el); const m = CM(); const { T } = periodProd(m); const bill = settleBill(m); const bs = bill && billStatus(bill);
     kpiRow(el, [[`셀아웃 · ${ml(m)} 정산`, F.won(T.rev), [`META 전 기준 ${F.won(T.rev0)} → `, el$('b', 'up', pct1(g(T.rev0, T.rev)))], '', true],
       ['판매수량', F.int(T.qty) + '개', [`기준 ${F.int(T.qty0)}개 → `, el$('b', T.qty >= T.qty0 ? 'up' : 'down', pct1(g(T.qty0, T.qty)))]],
@@ -2344,14 +2369,68 @@ dash.calc('chk_sum', {
     li(`${ml(a)} 정산 스코어 (${A.period})`, 'META 총비용 ', bb(F.won(A.meta_cost)), ` (마크업 ${F.won(A.markup)}) · 셀아웃 `, bb(F.won(A.revenue)), ' · 최종 공헌이익 ', bb(`${F.won(A.fin)} (${F.pct(A.margin)})`, A.fin < 0), ' · 회수율 ', bb(F.pct(RA && RA.rate), RA && RA.rate < 1), a === '2026-10' ? ' — 증액 · 여성 소재 확장 구간' : '', A.fin < 0 ? ', 비용이 이익을 넘음.' : '.', A.short.length ? ` (${A.short.join(', ')} 자료 시작)` : '');
     li(`${ml(b)} 정산 스코어 (${B.period})`, 'META 총비용 ', bb(`${F.won(B.meta_cost)} (${sgnW(B.meta_cost - A.meta_cost)})`), ' · 일평균 셀아웃 ', bb(pct1(g(A.revenue / A.days, B.revenue / B.days)), (B.revenue / B.days) < (A.revenue / A.days)), ' · 최종 공헌이익 ', bb(`${F.won(B.fin)} (${F.pct(B.margin)})`, B.fin < 0), ' · 회수율 ', bb(F.pct(RB && RB.rate), RB && RB.rate < 1), BB && BB.billed ? ` · 계정 전체 청구 ${F.won(BB.total)}` : '', ` — ${B.meta_cost < A.meta_cost ? 'META 감액' : 'META 증액'} 뒤 공헌이익 ${sgnW(B.fin - A.fin)} ${B.fin >= A.fin ? '개선' : '악화'}, 일평균 매출은 ${(B.revenue / B.days) >= (A.revenue / A.days) ? '늘었음' : '줄었음'}.`);
     const cap = B.cp_pre - (B.mkt || 0) - (INC() ? B.inapp : 0);
-    li('12월 방향 — 네이버 구좌 확보로 공헌이익 최대화', '① 네이버 노출 구좌(기획전 · 브랜드 검색 · 알림/톡톡 · 재구매 고객 리마인드)를 먼저 확보해 META 없이 들어오는 유입을 만든다. ',
-      '② META는 손익분기 안에서만: 11월 정산 기준 광고 전 공헌이익(' + (INC() ? '인앱 차감' : '인앱 제외') + ') ', bb(F.won(cap)), ' 대비 META 총비용 ', bb(`${F.won(B.meta_cost)} (${F.pct(cap ? B.meta_cost / cap : null)})`), '. 마크업 15%까지 감안하면 광고비(VAT) 한도는 ', bb(F.won(cap / (1 + MK()))), '. ',
-      '③ META는 흑자 라인(트리플립밤)과 다운펌 2개 구성 위주로 최소 유지, 쿠팡 낙수는 계속 확인. ', '④ 12월 정산(11/22~12/21) 목표: 최종 공헌이익 흑자 유지 · META 총비용 ÷ 매출을 11월 정산(', bb(F.pct(B.revenue ? B.meta_cost / B.revenue : null)), ') 아래로.'); });
+    li('12월 방향 — 회수율 100% 이상 · 광고비 타이트', '① 메인 프로모션 · 가격 메리트 · 다구성(2개+)에 집중해 회수율 100% 이상 유지. ', '② 광고비는 타이트하게 — 회수율 100% 기준 META 비용 한도 ', bb(F.won(Math.max(0, RB ? RB.inc : cap))), ` (${ml(b)} 정산 더 번 이익) 안에서만. `, '③ 신규 광고 소재는 제작하지 않고, 효율 낮은 소재는 OFF. ', '④ 쿠팡 낙수 · 네이버 재구매 고객 리마인드로 META 없이 남는 이익 확보.'); });
 
 
+
+  // 채널 × 제품 데이터: 전체 기간 = 플랫폼별 시트 · 정산월 = 정산월 제품 실적을 META 기간 채널 비중으로 배분 (추정)
+  const chanSet = () => { const m = CM();
+    if (m === 'ALL') { const ps = metaProds(); return { ps, all: platAgg(ps), per: Object.fromEntries(ps.map((p) => [p, platAgg([p]).by])), ptot: Object.fromEntries(ps.map((p) => [p, platAgg([p]).T])) }; }
+    const per = {}, ptot = {}; const ps = [];
+    info().forEach((i) => { const p = i.product; const mm = /\((\d+)일\)/.exec(i.platform_note || ''); const S = (RP.rows('prod_settle') || []).find((r) => r.month === m && r.product === p); if (!mm || !S) return; ps.push(p); const pd = +mm[1];
+      const grp = {}; (RP.rows('prod_platform') || []).filter((r) => r.product === p && !r.total && !/올리브영/.test(r.platform)).forEach((r) => { const k = GRP(r.platform); const o = grp[k] || (grp[k] = { rp: 0, qp: 0, cp: 0, ra: 0, qa: 0, ca: 0 });
+        o.rp += r.rev_post; o.qp += r.qty_post; o.cp += r.cpp_post - (INC() ? r.inapp_post : 0) - (r.mkt_post || 0); o.ra += r.rev_pre; o.qa += r.qty_pre; o.ca += r.cpp_pre - (INC() ? r.inapp_pre : 0) - (r.mkt_pre || 0); });
+      if (!grp['네이버']) grp['네이버'] = { rp: 0, qp: 0, cp: 0, ra: 0, qa: 0, ca: 0 };
+      const tr = d3.sum(Object.values(grp), (o) => o.rp), tq = d3.sum(Object.values(grp), (o) => o.qp), tc = d3.sum(Object.values(grp), (o) => o.cp); const scp = S.cp_pre - (INC() ? S.inapp : 0) - (S.mkt || 0);
+      per[p] = {}; Object.entries(grp).forEach(([k, o]) => { per[p][k] = { g: k, rev_pre: o.ra / pd * S.days, rev_post: tr ? S.revenue * o.rp / tr : 0, qty_pre: o.qa / pd * S.days, qty_post: tq ? S.qty * o.qp / tq : 0, cpp_pre: o.ca / pd * S.days, cpp_post: tc ? scp * o.cp / tc : 0, ia_pre: 0, ia_post: 0, mkt_pre: 0, mkt_post: 0, m_post: k === '네이버' ? S.meta : 0, mk_post: k === '네이버' ? S.markup : 0, m_pre: 0, mk_pre: 0 }; });
+      const T = { g: '전체' }; ['rev_pre', 'rev_post', 'qty_pre', 'qty_post', 'cpp_pre', 'cpp_post', 'ia_pre', 'ia_post', 'm_post', 'mk_post'].forEach((f) => { T[f] = d3.sum(Object.values(per[p]), (o) => o[f]); }); ptot[p] = T; });
+    const by = {}; ps.forEach((p) => Object.values(per[p]).forEach((o) => { const x = by[o.g] || (by[o.g] = { g: o.g }); Object.keys(o).forEach((f) => { if (f !== 'g') x[f] = (x[f] || 0) + o[f]; }); }));
+    const T = { g: '전체' }; ['rev_pre', 'rev_post', 'qty_pre', 'qty_post', 'cpp_pre', 'cpp_post', 'ia_pre', 'ia_post', 'm_post', 'mk_post'].forEach((f) => { T[f] = d3.sum(Object.values(by), (o) => o[f]); });
+    return { ps, all: { by, T }, per, ptot }; };
+  // ---------- 최상단 써머리: 지불할 금액 표 · 채널 × 제품 META 전·후
+  dash.draw('topSum', (el) => { el.replaceChildren(); const L = settleMonths().map(settleBill).filter(Boolean).map(projBill); if (!L.length) return;
+    const head = el$('div', 'sec-h'); const hh = el$('div'); hh.append(el$('div', 'eyebrow', '써머리'), el$('h2', 'sec-t', 'META 정산 · 얼마 썼고 얼마를 내야 하나'), el$('p', 'note', '정산 22일~21일 · 지불할 금액 = 광고비(VAT 포함) + 마크업 15%')); head.append(hh); el.append(head);
+    // 1) 지불 표
+    const tw = el$('div', 'tbl'); const t = el$('table', 't paytbl'); const th = el$('thead'); const hr = el$('tr'); th.append(hr);
+    ['정산월', '기간', '금액 기준', '광고 지출 (VAT 별도)', '부가세 10%', 'META 광고비 (VAT 포함)', '마크업 15%', '지불할 금액', '비고'].forEach((x) => hr.append(el$('th', '', x)));
+    const tb = el$('tbody'); t.append(th, tb); tw.append(t);
+    const row = (r, cls) => { const s = billStatus(r); const tr = el$('tr', cls || ''); tr.style.cursor = 'pointer'; tr.onclick = () => dash.setParams({ sm: r.m, cm: r.m });
+      td(tr, `${ml(r.m)} 정산`, true); td(tr, r.period); const c = td(tr, ''); c.append(el$('span', 'stb ' + s.k, s.t));
+      td(tr, F.wonFullW(r.spend)); td(tr, F.wonFullW(r.vat)); td(tr, F.wonFullW(r.meta_vat)); const mk = td(tr, F.wonFullW(r.markup), true); mk.style.color = 'var(--c-hot)';
+      const pay = td(tr, (r.partial ? '예상 ' : '') + F.wonFullW(r.total), true); pay.className = 'pay'; if (r.partial) { tr.classList.add('proj'); pay.append(el$('div', 'cs', `현재까지 ${F.wonFullW(r.run.total)}`)); }
+      td(tr, r.billed ? '광고관리자 정산' : r.partial ? `현재 비용 기준 월말 예상 (~${r.run.to} 실제 ${F.won(r.run.total)})` : '제품 파일 실집행'); tb.append(tr); };
+    L.forEach((r) => row(r, CM() === r.m ? 'cur' : ''));
+    const done = L.filter((r) => !r.partial); const sum = (k, A) => d3.sum(A, (r) => r[k]);
+    const tr = el$('tr', 'tot'); td(tr, `합계 (${done.map((r) => ml(r.m)).join('·')} 정산)`, true); td(tr, `${done[0] ? done[0].period.split('~')[0] : ''} ~ ${done.length ? done[done.length - 1].period.split('~')[1] : ''}`); td(tr, `확정 ${done.filter((r) => r.billed).length} · 실집행 ${done.filter((r) => !r.billed).length}`);
+    ['spend', 'vat', 'meta_vat'].forEach((k) => td(tr, F.wonFullW(sum(k, done)))); const m2 = td(tr, F.wonFullW(sum('markup', done)), true); m2.style.color = 'var(--c-hot)'; const p2 = td(tr, F.wonFullW(sum('total', done)), true); p2.className = 'pay';
+    const run = L.filter((r) => r.partial); td(tr, run.length ? `${run.map((r) => ml(r.m)).join('·')} 정산 진행 중 별도` : ''); tb.append(tr);
+    const basis = el$('div', 'basis'); [['판매 데이터', 'META 집행 제품만 · 올리브영 제외'], ['공헌이익', '셀인(순매출) 기준 · 원가 · 배송비 차감 · 광고 전'], ['META 비용', '전부 네이버 비용 처리']].forEach(([a, b]) => { const c = el$('span', 'bchip'); c.append(el$('b', '', a), ' ' + b); basis.append(c); });
+    el.append(tw, basis);
+    // 2) 채널 × 제품 META 전 → 후
+    const CS = chanSet(); const ps = CS.ps, all = CS.all, per = CS.per; const isM = CM() !== 'ALL';
+    const chs = GORD.filter((k) => all.by[k]); const g2 = el$('div', 'sumgrid');
+    const p1 = el$('div', 'panel'); p1.append(el$('h3', '', isM ? `채널 × 제품 · ${ml(CM())} 정산 · 평소 → 실제` : '채널 × 제품 · META 전 → 후 (같은 일수)'), el$('p', 'note', '매출 증감률 · 매출액 · 수량 · 광고 전 이익' + (isM ? ' · 채널은 META 기간 채널 비중으로 나눈 추정' : '')));
+    const t2w = el$('div', 'tbl'); const t2 = el$('table', 't chx'); const h2 = el$('thead'); const r2 = el$('tr'); h2.append(r2); ['채널', ...ps, '합계'].forEach((x) => r2.append(el$('th', '', x))); const b2 = el$('tbody'); t2.append(h2, b2); t2w.append(t2); p1.append(t2w);
+    const cell = (tr, o) => { const c = el$('td'); if (!o || !(o.rev_pre || o.rev_post)) { c.textContent = '—'; tr.append(c); return; } const gg = g(o.rev_pre, o.rev_post); const a = el$('div', 'cv ' + (gg == null || gg >= 0 ? 'up' : 'down'), !o.rev_pre ? '신규' : pct1(gg));
+      const b = el$('div', 'cs', `${F.won(o.rev_pre)} → ${F.won(o.rev_post)}`); const q = el$('div', 'cs', `수량 ${F.int(o.qty_pre)} → ${F.int(o.qty_post)}`); const dcp = (o.cpp_post - o.cpp_pre) - (o.ia_post - o.ia_pre); const cc = el$('div', 'cs ' + (dcp >= 0 ? 'up' : 'down'), `이익 ${sgnW(dcp)}`); c.append(a, b, q, cc); tr.append(c); };
+    chs.forEach((k) => { const tr = el$('tr'); td(tr, k === '네이버' ? '네이버 (META 랜딩)' : k, true); ps.forEach((p) => cell(tr, per[p][k])); cell(tr, all.by[k]); b2.append(tr); });
+    const trT = el$('tr', 'tot'); td(trT, '전체', true); ps.forEach((p) => cell(trT, CS.ptot[p])); cell(trT, all.T); b2.append(trT);
+    const nv = all.by['네이버'] || {}; const nvRow = el$('tr', 'meta'); td(nvRow, '└ 네이버 META 비용 (광고비+마크업)', true); ps.forEach((p) => { const o = per[p]['네이버'] || {}; td(nvRow, o.m_post ? '−' + F.won(o.m_post + o.mk_post) : '—'); }); td(nvRow, '−' + F.won(nv.m_post + nv.mk_post), true); b2.append(nvRow);
+    // 3) 채널별 핵심 요약
+    const p3 = el$('div', 'panel dir'); p3.append(el$('h3', '', isM ? `채널별 핵심 요약 · ${ml(CM())} 정산` : '채널별 핵심 요약 (META 전 → 후)')); const ul = el$('ul', 'chsum');
+    const best = (k) => ps.map((p) => [p, per[p][k]]).filter(([, o]) => o && (o.rev_post - o.rev_pre)).sort((a, b) => (b[1].rev_post - b[1].rev_pre) - (a[1].rev_post - a[1].rev_pre));
+    chs.forEach((k) => { const o = all.by[k]; const li = el$('li'); const dcp = (o.cpp_post - o.cpp_pre) - (o.ia_post - o.ia_pre); const bs = best(k).slice(0, 2);
+      li.append(el$('b', '', k), ' 매출 ', el$('b', o.rev_post >= o.rev_pre ? 'up' : 'down', pct1(g(o.rev_pre, o.rev_post))), ' · 이익 ', el$('b', dcp >= 0 ? 'up' : 'down', sgnW(dcp)));
+      if (k === '네이버') li.append(' → META 비용 빼면 ', el$('b', (dcp - o.m_post - o.mk_post) >= 0 ? 'up' : 'down', sgnW(dcp - o.m_post - o.mk_post)));
+      if (bs.length) li.append(el$('span', 'note', ` · ${bs[0][0]} 주도`));
+      ul.append(li); });
+    const R = isM ? (() => { const T = periodProd(CM()).T; return { rate: T.rate, net: T.net }; })() : recov(); const nvx = all.by['네이버'] || {}; const nfin = (nvx.cpp_post - nvx.cpp_pre) - (nvx.ia_post - nvx.ia_pre) - nvx.m_post - nvx.mk_post;
+    const li = el$('li', 'concl'); li.append(el$('b', '', '정리 '), `네이버 매출 최대 증가 · META 비용 반영 시 네이버 ${sgnW(nfin)} · 다른 채널 이익 증가 → 회수율 ${F.pct(R.rate)} (남은 이익 ${sgnW(R.net)})`); ul.append(li);
+    p3.append(ul);
+    g2.append(p1, p3); el.append(g2); });
   // ---------- 최상단: META 정산 — 정산월 선택 · 실제 / 예상 구분
   // 상태: 실제 = 광고관리자 금액 입력 · 예상 = 제품 파일 META 합계(다른 제품 캠페인 미포함) · 진행 중 = 기간 미종료, 지금까지 일평균 × 정산 일수로 월말 예상
-  const billStatus = (r) => r.billed ? { k: 'act', t: '정산 확정', d: '광고관리자 정산 금액 · 계정 전체 (모든 제품 캠페인)' } : r.partial ? { k: 'run', t: '진행 중', d: `~${r.to}까지 실제 집행분 + 남은 기간은 같은 속도로 예상` } : { k: 'est', t: '실집행 기준', d: '이 정산월(22일~21일)에 실제로 쓴 META 금액 · META 집행 제품(제품 파일) 합계 · 정산서 금액은 미입력' };
+  const billStatus = (r) => r.billed ? { k: 'act', t: '정산 확정', d: '광고관리자 정산 · 계정 전체' } : r.partial ? { k: 'run', t: '진행 중 · 예상', d: `현재 비용 기준 월말 예상 (~${r.to} 실제)` } : { k: 'est', t: '실집행 기준', d: '이 정산월 실제 집행 · META 집행 제품' };
   const projBill = (r) => { if (!r.partial) return r; const S = (RP.rows('prod_settle') || []).filter((q) => q.month === r.m); const days = d3.max(S, (q) => q.days) || 1, full = d3.max(S, (q) => q.full) || days; const f = full / days;
     const o = { ...r, run: { ...r }, days, full }; ['spend', 'vat', 'meta_vat', 'markup', 'total', 'fileMeta', 'other'].forEach((k) => { o[k] = r[k] * f; }); o.prods = Object.fromEntries(Object.entries(r.prods).map(([p, v]) => [p, v * f])); return o; };
   const acctFactor = () => { const L = settleMonths().map(settleBill).filter((r) => r && r.billed && r.fileMeta); if (!L.length) return null; return d3.sum(L, (r) => r.meta_vat) / d3.sum(L, (r) => r.fileMeta); };
@@ -2363,14 +2442,14 @@ dash.calc('chk_sum', {
     L.forEach((r) => { const s = billStatus(r); const b = el$('button', 'sm-card ' + s.k + (r.m === cur ? ' on' : '')); b.type = 'button'; b.onclick = () => dash.setParams({ sm: r.m, cm: r.m });
       const h = el$('div', 'smh'); h.append(el$('span', 'smm', `${ml(r.m)} 정산`), el$('span', 'stb ' + s.k, s.t)); b.append(h, el$('span', 'smp', r.period));
       b.append(el$('span', 'smv', F.won(r.total)), el$('span', 'sms', `마크업 ${F.won(r.markup)}`)); strip.append(b); });
-    el.append(el$('div', 'eyebrow', 'META 정산 · 22일 ~ 21일 · 정산월을 누르면 그 기간 기준으로 계산'), strip);
+    el.append(el$('div', 'eyebrow', 'META 정산 상세 · 카드 클릭'), strip);
     // 2) 선택한 정산월 상세
     const det = el$('div', 'sm-detail ' + st.k);
     const left = el$('div', 'sm-left'); const t1 = el$('div', 'smt'); t1.append(el$('span', '', `${ml(R.m)} 정산 META 비용 (${R.period})`), el$('span', 'stb ' + st.k, st.t)); left.append(t1);
     left.append(el$('span', 'sm-big', F.wonFullW(R.total)));
-    left.append(el$('span', 'note', st.d + (R.billed ? ` · ${R.src}` : '')));
-    if (R.run) left.append(el$('span', 'note', `~${R.run.to} 실제 집행분 ${F.won(R.run.total)} (${R.days}/${R.full}일) → 월말까지 같은 속도면 ${F.won(R.total)}`));
-    if (!R.billed && af) left.append(el$('span', 'note', `참고: 정산서에는 다른 제품 캠페인도 들어감 → 11월 정산 비율(${d3.format('.2f')(af)}배)로 계정 전체를 환산하면 약 ${F.won(R.total * af)}`));
+    left.append(el$('span', 'note', st.d));
+    if (R.run) left.append(el$('span', 'note', `~${R.run.to} 실제 ${F.won(R.run.total)} (${R.days}/${R.full}일)`));
+
     const flow = el$('div', 'sm-flow'); const fx = (l, v, cls) => { const d = el$('div', 'fx ' + (cls || '')); d.append(el$('span', 'fl', l), el$('span', 'fv', v)); flow.append(d); }; const op = (t) => flow.append(el$('span', 'fo', t));
     fx('광고 지출 (VAT 별도)', F.wonFullW(R.spend)); op('+'); fx('부가세 10%', F.wonFullW(R.vat)); op('='); fx('META 광고비 (VAT 포함)', F.wonFullW(R.meta_vat)); op('+'); fx(`마크업 ${Math.round(MK() * 100)}%`, F.wonFullW(R.markup), 'mk'); op('='); fx('청구 합계', F.wonFullW(R.total), 'tot');
     left.append(flow);
@@ -2378,7 +2457,7 @@ dash.calc('chk_sum', {
     const items = [...Object.entries(R.prods).sort((a, b) => b[1] - a[1]).map(([p, v]) => [p, v, PCOL[Math.max(0, metaProds().indexOf(p)) % 5]]), ...(R.other > 1 ? [['그 외 (선스틱 · 루트샴푸 등)', R.other, 'var(--c-etc)']] : [])];
     items.forEach(([p, v, c]) => { const row = el$('div', 'pu'); const sh = v / R.meta_vat; const nm = el$('span', 'pun', p); const bar = el$('span', 'pub'); const fill = el$('i'); fill.style.width = Math.max(1, sh * 100) + '%'; fill.style.background = c; bar.append(fill);
       row.append(nm, bar, el$('span', 'puv', `${F.won(v * (1 + MK()))} · ${F.pct(sh)}`)); right.append(row); });
-    if (!R.billed) right.append(el$('p', 'note', '이 정산월 실제 집행 · META 집행 제품(제품 파일) 기준')); else right.append(el$('p', 'note', `META 집행 3개 제품 몫 ${F.won(R.fileMeta * (1 + MK()))} (마크업 ${F.won(R.fileMeta * MK())}) → 아래 회수율 계산에 사용`));
+    if (R.billed) right.append(el$('p', 'note', `3개 제품 몫 ${F.won(R.fileMeta * (1 + MK()))} → 회수율 계산에 사용`));
     det.append(left, right); el.append(det);
     // 3) 합계 (실제 / 예상 분리)
     const act = L.filter((r) => r.billed), est = L.filter((r) => !r.billed);
@@ -2391,7 +2470,7 @@ dash.calc('chk_sum', {
     return { W, pk, rec, r: { d_cost: avg((o) => o.d_cost), d_rev: avg((o) => o.d_rev), d_fin: avg((o) => o.d_fin) } }; };
   dash.draw('mcNote', (el) => { const { a, b } = SC(); const A = a && settleTot(a), B = b && settleTot(b); const p = peakInfo(); if (!A || !B || !p) { el.textContent = '—'; return; }
     const dc = g(A.meta_cost / A.days, B.meta_cost / B.days), dr = g(A.revenue / A.days, B.revenue / B.days);
-    el.textContent = `다운펌 · 팁스케치 · 트리플립밤 일별 합계 (모든 채널) · ${INC() ? '인앱 포함' : '인앱 제외'} · ${ml(a)} 정산 → ${ml(b)} 정산: META 총비용 ${pct1(dc)} 동안 셀아웃 ${pct1(dr)} (일평균) — ` + (dr > dc ? '매출이 비용만큼 빠지지 않아, 줄인 비용이 공헌이익으로 남음' : '매출이 비용보다 더 빠짐'); });
+    el.textContent = `${ml(a)} → ${ml(b)} 정산: META 비용 ${pct1(dc)} · 셀아웃 ${pct1(dr)} (일평균) → ` + (dr > dc ? '매출은 비용만큼 안 빠짐, 줄인 비용이 이익으로' : '매출이 비용보다 더 빠짐'); });
   dash.draw('mcPoints', (el) => { el.replaceChildren(); const { a, b } = SC(); const A = a && settleTot(a), B = b && settleTot(b); const p = peakInfo(); if (!A || !B || !p) return;
     const kp = (l, v, d, cls, hot) => { const k = el$('div', 'kpi' + (hot ? ' hot' : '')); k.append(el$('span', 'lab', l)); const vv = el$('span', 'val', v); if (cls) vv.className = 'val ' + cls; k.append(vv); const dl = el$('span', 'dl'); d.forEach((x) => dl.append(x)); k.append(dl); el.append(k); };
     const B_ = (t, c) => el$('b', c || '', t);
@@ -2424,6 +2503,25 @@ dash.calc('chk_sum', {
     svg.append('g').selectAll('rect.hit').data(W).join('rect').attr('x', (o) => x(o.key) - (x.step() - x.bandwidth()) / 2).attr('width', x.step()).attr('y', m.t).attr('height', h - m.t - m.b).attr('fill', 'transparent')
       .on('mousemove', (ev, o) => tip.show(ev, [{ t: `${md(o.key)}주 (${o.days}일) · 일평균` }, { c: 'var(--c-blue)', t: `META 광고비 ${F.won(o.d_meta)}` }, { c: 'var(--c-hot)', t: `마크업 ${F.won(o.d_mk)}` }, { c: 'var(--color-fg)', t: `셀아웃 ${F.won(o.d_rev)}` }, { c: 'var(--c-naver)', t: `최종 공헌이익 ${F.won(o.d_fin)} (${F.pct(o.margin)})` }]))
       .on('mouseleave', tip.hide); });
+
+  // ---------- 네이버 고객: 월별 표 · LTV
+  const ncData = () => { const M = (RP.rows('monthly') || []).filter((r) => r.month >= '2026-06'); const L = RP.rows('month_ltv') || []; const LT = RP.rows('ltv') || [];
+    const rep = LT.find((x) => x.segment === '재구매 고객') || {}, one = LT.find((x) => x.segment === '1회 구매 고객') || {}, all = LT.find((x) => x.segment === '전체') || {};
+    const full = M.filter((r) => !r.days || r.days >= (r.month_days || 30) - 1); const cyc = d3.mean(full.slice(-3), (r) => r.avg_cycle);
+    const metaNew = d3.sum(M.filter((r) => r.month >= '2026-09'), (r) => r.new); const conv = all.customers ? rep.customers / all.customers : 0; const add = metaNew * conv * ((rep.ltv || 0) - (one.ltv || 0));
+    return { M, L, rep, one, all, cyc, metaNew, conv, add, lastL: L[L.length - 1] || {} }; };
+  dash.draw('ncTake', (el) => { const D = ncData(); el.replaceChildren(); if (!D.rep.ltv) return; const B = (t) => el$('b', '', t);
+    el.append('만족한 고객은 구매주기(평균 ', B(`${Math.round(D.cyc)}일`), ')마다 다시 산다 → 재구매 고객 LTV ', B(F.wonFullW(D.rep.ltv)), ' = 1회 고객(', F.wonFullW(D.one.ltv), ')의 ', B(`${d3.format('.1f')(D.rep.ltv / D.one.ltv)}배`), '. META로 들어온 신규 ', B(`${F.int(D.metaNew)}명`), ' 중 평소 전환율(', F.pct(D.conv), ')만 재구매로 넘어와도 다음 구매주기에 약 ', B(F.won(D.add)), ' 추가 매출 (추정).'); });
+  dash.draw('ncLtv', (el) => { const D = ncData(); const last = D.M[D.M.length - 1] || {}; const prev = D.M[D.M.length - 2] || {};
+    kpiRow(el, [['재구매 고객 LTV (1인당 누적 매출)', F.wonFullW(D.rep.ltv), `1회 고객 ${F.wonFullW(D.one.ltv)} · ${d3.format('.1f')(D.rep.ltv / D.one.ltv)}배`, 'up', true],
+      ['평균 재구매 주기', `${Math.round(D.cyc)}일`, '최근 3개월 평균 · 이 주기마다 재구매 발생'],
+      ['누적 재구매 고객', F.int(D.lastL.cum_rep_cust) + '명', `전체 고객 ${F.int(D.all.customers)}명 중 ${F.pct(D.conv)}`],
+      [`재구매율 · ${ml(last.month || '2026-11')}${last.days < last.month_days ? `(1~${last.days}일)` : ''}`, F.pct(last.rep_rate), [`직전 ${F.pct(prev.rep_rate)} → `, el$('b', last.rep_rate >= prev.rep_rate ? 'up' : 'down', pp(last.rep_rate - prev.rep_rate))]],
+      ['META 기간 신규 → 재구매 예상 매출', F.won(D.add), `신규 ${F.int(D.metaNew)}명 × ${F.pct(D.conv)} × LTV 차이 ${F.won(D.rep.ltv - D.one.ltv)}`, 'up']]); });
+  dash.draw('ncTable', (tb) => { tb.replaceChildren(); const D = ncData(); D.M.slice().reverse().forEach((r, i, A) => { const L = D.L.find((x) => x.month === r.month) || {}; const pv = A[i + 1]; const tr = el$('tr');
+      const part = r.last_day && r.last_day < r.month_days; td(tr, ml(r.month) + (part ? `(1~${r.last_day}일)` : ''), true); td(tr, F.int(r.buyers)); td(tr, F.int(r.new)); td(tr, F.int(r.rep_cust), true);
+      const rr = td(tr, F.pct(r.rep_rate)); if (pv) rr.className = r.rep_rate >= pv.rep_rate ? 'up' : 'down';
+      td(tr, F.won(r.revenue)); td(tr, F.won(r.rep_revenue)); td(tr, F.pct(r.rep_rev_share)); td(tr, r.avg_cycle ? `${Math.round(r.avg_cycle)}일` : '—'); td(tr, F.int(L.cum_rep_cust)); td(tr, L.cum_rep_cust ? F.wonFullW(L.ltv_rev_total / L.cum_rep_cust) : '—', true); tb.append(tr); }); });
   // ---------- 제품 카드 → 드로어
   dash.draw('pcNote', (el) => { el.textContent = `${UNAME[U()]} · 최근 기간 기준 (7일 미만 진행 구간은 직전 기간 표시) · ${INC() ? '인앱 포함' : '인앱 제외'}`; });
   const latest = (p) => { const L0 = series(p); const L = L0.length > 1 && L0[L0.length - 1].days < Math.min(7, L0[L0.length - 1].full) ? L0.slice(0, -1) : L0; return { L, n: L[L.length - 1] }; };
